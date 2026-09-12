@@ -1,330 +1,103 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CardCraft AI — E-commerce Studio</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- React & React DOM CDN -->
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <!-- Babel for JSX -->
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <!-- Supabase JS Client -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CardCraft AI — E-commerce Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen font-sans">
-  <div id="root"></div>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
 
-  <script type="text/babel">
-    const { useState, useEffect } = React;
-
-    // Initialize Supabase Client using environment variables
- const SUPABASE_URL = 'https://zecwwgefsbpiadifnnuc.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // вставьте ваш полнный Legacy anon key
-    const GEMINI_API_KEY = window.process?.env?.VITE_GEMINI_API_KEY || "";
-
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    function App() {
-      const [session, setSession] = useState(null);
-      const [credits, setCredits] = useState(0);
-      const [loading, setLoading] = useState(false);
-      const [email, setEmail] = useState('');
-      const [authLoading, setAuthLoading] = useState(false);
-      const [authMessage, setAuthMessage] = useState('');
-      const [showPayModal, setShowPayModal] = useState(false);
-
-      // Product Form State
-      const [productName, setProductName] = useState('');
-      const [productDesc, setProductDesc] = useState('');
-      const [result, setResult] = useState(null);
-
-      useEffect(() => {
-        // Check active session
-        supabase.auth.getSession().then(({ data: { session } }) => {
-          setSession(session);
-          if (session) fetchUserProfile(session.user.id);
-        });
-
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-          setSession(session);
-          if (session) fetchUserProfile(session.user.id);
-        });
-
-        return () => subscription.unsubscribe();
-      }, []);
-
-      async function fetchUserProfile(userId) {
-        try {
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('credits')
-            .eq('id', userId)
-            .single();
-
-          if (data) {
-            setCredits(data.credits);
-          }
-        } catch (err) {
-          console.error("Error fetching profile:", err);
-        }
-      }
-
-      async function handleLogin(e) {
-        e.preventDefault();
-        setAuthLoading(true);
-        setAuthMessage('');
-
-        const { error } = await supabase.auth.signInWithOtp({ email });
-        if (error) {
-          setAuthMessage('Ошибка: ' + error.message);
-        } else {
-          setAuthMessage('Ссылка для входа отправлена на ваш Email!');
-        }
-        setAuthLoading(false);
-      }
-
-      async function handleLogout() {
-        await supabase.auth.signOut();
-        setSession(null);
-        setCredits(0);
-      }
-
-      async function handleGenerate(e) {
-        e.preventDefault();
-
-        if (!session) {
-          alert('Пожалуйста, войдите в аккаунт для генерации!');
-          return;
-        }
-
-        if (credits <= 0) {
-          setShowPayModal(true);
-          return;
-        }
-
-        setLoading(true);
-
-        try {
-          // Deduct 1 credit in Supabase
-          const { data, error } = await supabase
-            .from('profiles')
-            .update({ credits: credits - 1 })
-            .eq('id', session.user.id)
-            .select();
-
-          if (error) throw error;
-          setCredits(credits - 1);
-
-          // Simulated AI Generation logic (Call Gemini API)
-          setTimeout(() => {
-            setResult({
-              title: `${productName} — Идеальный выбор для вашего дома`,
-              slides: [
-                { title: "Слайд 1: Главное фото", points: ["Премиальное качество", "Гарантия 2 года", "Хит продаж WB/Ozon"] },
-                { title: "Слайд 2: Преимущества", points: ["Экологичный материал", "Устойчив к износу", "Легкий уход"] },
-                { title: "Слайд 3: Комплектация", points: ["Фирменная упаковка", "Инструкция на русском", "Подарок внутри"] }
-              ],
-              seo: `Купить ${productName} с доставкой. ${productDesc}. Высокое качество, отличные отзывы.`
-            });
-            setLoading(false);
-          }, 1500);
-
-        } catch (err) {
-          alert("Ошибка при списании кредитов: " + err.message);
-          setLoading(false);
-        }
-      }
-
-      return (
-        <div className="min-h-screen flex flex-col">
-          {/* Header Bar */}
-          <header className="border-b border-slate-800 bg-slate-950 px-6 py-4 flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl font-black bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent">
-                CardCraft AI
-              </span>
-              <span className="text-xs font-semibold px-2 py-0.5 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded">
-                E-commerce Studio
-              </span>
-            </div>
-
-            <div className="flex items-center gap-4">
-              {session ? (
-                <div className="flex items-center gap-4">
-                  <div className="bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 text-sm flex items-center gap-2">
-                    <span className="text-slate-400">Баланс:</span>
-                    <span className="font-bold text-emerald-400">{credits} генераций</span>
-                  </div>
-                  <button
-                    onClick={() => setShowPayModal(true)}
-                    className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition"
-                  >
-                    Пополнить
-                  </button>
-                  <button
-                    onClick={handleLogout}
-                    className="text-slate-400 hover:text-white text-sm"
-                  >
-                    Выйти
-                  </button>
-                </div>
-              ) : (
-                <span className="text-sm text-slate-400">Войдите для доступа</span>
-              )}
-            </div>
-          </header>
-
-          {/* Main Content */}
-          <main className="flex-1 max-w-5xl w-full mx-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Left Panel: Auth / Form */}
-            <div className="space-y-6">
-              {!session ? (
-                <div className="bg-slate-800/50 border border-slate-700/50 p-6 rounded-2xl">
-                  <h2 className="text-xl font-bold mb-2">Вход / Регистрация</h2>
-                  <p className="text-slate-400 text-sm mb-4">
-                    Получите 3 бесплатные генерации сразу после входа!
-                  </p>
-                  <form onSubmit={handleLogin} className="space-y-4">
-                    <input
-                      type="email"
-                      required
-                      placeholder="Ваш Email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-indigo-500"
-                    />
-                    <button
-                      type="submit"
-                      disabled={authLoading}
-                      className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-medium py-2.5 rounded-xl transition"
-                    >
-                      {authLoading ? 'Отправка...' : 'Войти по Email'}
-                    </button>
-                  </form>
-                  {authMessage && (
-                    <p className="mt-3 text-sm text-center text-indigo-400">{authMessage}</p>
-                  )}
-                </div>
-              ) : (
-                <form onSubmit={handleGenerate} className="bg-slate-800/50 border border-slate-700/50 p-6 rounded-2xl space-y-4">
-                  <h2 className="text-xl font-bold">Генерация карточки</h2>
-                  <div>
-                    <label className="block text-sm text-slate-400 mb-1">Название товара</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Например: Термокружка 500мл"
-                      value={productName}
-                      onChange={(e) => setProductName(e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-indigo-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-slate-400 mb-1">Описание / Особенности</label>
-                    <textarea
-                      rows="4"
-                      required
-                      placeholder="Держит тепло 12 часов, нерж. сталь, крышка с клапаном..."
-                      value={productDesc}
-                      onChange={(e) => setProductDesc(e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-indigo-500"
-                    ></textarea>
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-emerald-900/20"
-                  >
-                    {loading ? 'Создаем инфографику...' : 'Сгенерировать (1 кредит)'}
-                  </button>
-                </form>
-              )}
-            </div>
-
-            {/* Right Panel: Result Preview */}
-            <div className="bg-slate-800/30 border border-slate-800 p-6 rounded-2xl flex flex-col">
-              <h2 className="text-xl font-bold mb-4">Результат</h2>
-              {result ? (
-                <div className="space-y-4 flex-1">
-                  <div className="p-4 bg-slate-900 rounded-xl border border-slate-700">
-                    <h3 className="font-semibold text-indigo-400 mb-1">Заголовок:</h3>
-                    <p className="text-sm text-slate-200">{result.title}</p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <h3 className="font-semibold text-indigo-400">Структура слайдов:</h3>
-                    {result.slides.map((slide, i) => (
-                      <div key={i} className="p-3 bg-slate-900/80 rounded-lg text-sm border border-slate-800">
-                        <div className="font-medium text-slate-300">{slide.title}</div>
-                        <ul className="list-disc list-inside text-slate-400 text-xs mt-1">
-                          {slide.points.map((pt, j) => <li key={j}>{pt}</li>)}
-                        </ul>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="p-4 bg-slate-900 rounded-xl border border-slate-700">
-                    <h3 className="font-semibold text-indigo-400 mb-1">SEO-Описание:</h3>
-                    <p className="text-xs text-slate-300">{result.seo}</p>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex-1 flex items-center justify-center text-slate-500 text-sm">
-                  Заполните форму и нажмите генерацию для получения карточки товара
-                </div>
-              )}
-            </div>
-          </main>
-
-          {/* Payment Modal */}
-          {showPayModal && (
-            <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-              <div className="bg-slate-800 border border-slate-700 p-6 rounded-2xl max-w-md w-full space-y-4">
-                <h3 className="text-xl font-bold">Пополнение баланса</h3>
-                <p className="text-slate-400 text-sm">Выберите подходящий пакет генераций:</p>
-                
-                <div className="space-y-3">
-                  <div className="p-4 bg-slate-900 border border-slate-700 rounded-xl flex justify-between items-center cursor-pointer hover:border-indigo-500">
-                    <div>
-                      <div className="font-bold">20 генераций</div>
-                      <div className="text-xs text-slate-400">Для пробы</div>
-                    </div>
-                    <span className="text-emerald-400 font-bold">199 ₽</span>
-                  </div>
-
-                  <div className="p-4 bg-slate-900 border border-indigo-500/50 rounded-xl flex justify-between items-center cursor-pointer hover:border-indigo-500">
-                    <div>
-                      <div className="font-bold">100 генераций</div>
-                      <div className="text-xs text-indigo-400">Популярный выбор</div>
-                    </div>
-                    <span className="text-emerald-400 font-bold">699 ₽</span>
-                  </div>
-                </div>
-
-                <div className="flex gap-3 pt-2">
-                  <button
-                    onClick={() => setShowPayModal(false)}
-                    className="flex-1 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-sm font-medium"
-                  >
-                    Закрыть
-                  </button>
-                  <button
-                    onClick={() => { alert('Подключение эквайринга...'); setShowPayModal(false); }}
-                    className="flex-1 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-sm font-medium"
-                  >
-                    Оплатить
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur px-6 py-4 flex justify-between items-center">
+        <h1 class="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent">
+            CardCraft AI <span class="text-xs px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-800">E-commerce Studio</span>
+        </h1>
+        
+        <div id="auth-status" class="flex items-center gap-4">
+            <span class="text-sm text-slate-400">Загрузка...</span>
         </div>
-      );
-    }
+    </header>
 
-    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
-  </script>
+    <main class="flex-1 max-w-5xl w-full mx-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+        <div id="login-card" class="bg-slate-900 border border-slate-800 p-6 rounded-xl shadow-xl">
+            <h2 class="text-lg font-semibold text-white mb-2">Вход / Регистрация</h2>
+            <p class="text-sm text-slate-400 mb-6">Получите 3 бесплатные генерации сразу после входа!</p>
+            
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <input type="email" id="email-input" required placeholder="name@example.com" class="w-full px-4 py-2.5 rounded-lg bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+                </div>
+                <button type="submit" id="login-btn" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 font-medium rounded-lg transition-colors">
+                    Войти по Email
+                </button>
+            </form>
+            <div id="auth-message" class="mt-4 text-sm text-center text-red-400 hidden"></div>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-xl shadow-xl min-h-[300px]">
+            <h2 class="text-lg font-semibold text-white mb-4">Результат</h2>
+            <p class="text-slate-500 text-sm">Заполните форму и нажмите генерацию для получения карточки товара</p>
+        </div>
+    </main>
+
+    <script>
+        const SUPABASE_URL = 'https://zecwwgefsbpiadifnnuc.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InplY3d3Z2Vmc2JwaWFkaWZubnVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc2OTM5MTUsImV4cCI6MjA3MzI2OTkxNX0.EXX_3w3-placeholder';
+
+        let supabase = null;
+        if (window.supabase) {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
+
+        const authStatus = document.getElementById('auth-status');
+        const loginCard = document.getElementById('login-card');
+        const loginForm = document.getElementById('login-form');
+        const authMessage = document.getElementById('auth-message');
+
+        async function checkUser() {
+            if (!supabase) return;
+            const { data: { user } } = await supabase.auth.getUser();
+            
+            if (user) {
+                const { data: profile } = await supabase.from('profiles').select('credits').eq('id', user.id).single();
+                const credits = profile ? profile.credits : 0;
+
+                authStatus.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="bg-indigo-950 text-indigo-300 border border-indigo-800 px-3 py-1 rounded-full text-xs font-semibold">⚡ ${credits} кредитов</span>
+                        <span class="text-sm text-slate-300">${user.email}</span>
+                        <button onclick="logout()" class="text-xs text-slate-400 hover:text-white underline">Выйти</button>
+                    </div>
+                `;
+                loginCard.classList.add('hidden');
+            } else {
+                authStatus.innerHTML = `<span class="text-sm text-slate-400">Войдите для доступа</span>`;
+                loginCard.classList.remove('hidden');
+            }
+        }
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email-input').value;
+            authMessage.classList.add('hidden');
+            
+            const { error } = await supabase.auth.signInWithOtp({ email });
+            
+            if (error) {
+                authMessage.innerText = 'Ошибка: ' + error.message;
+                authMessage.classList.remove('hidden');
+            } else {
+                alert('Ссылка для входа отправлена на ваш email!');
+            }
+        });
+
+        async function logout() {
+            await supabase.auth.signOut();
+            checkUser();
+        }
+
+        checkUser();
+    </script>
 </body>
 </html>
