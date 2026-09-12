@@ -20,8 +20,8 @@
     const { useState, useEffect } = React;
 
     // Initialize Supabase Client using environment variables
-    const SUPABASE_URL = window.process?.env?.VITE_SUPABASE_URL || "https://zecwwgefsbpiadifnnuc.supabase.co";
-    const SUPABASE_ANON_KEY = window.process?.env?.VITE_SUPABASE_ANON_KEY || "YOUR_SUPABASE_ANON_KEY";
+ const SUPABASE_URL = 'https://zecwwgefsbpiadifnnuc.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // вставьте ваш полнный Legacy anon key
     const GEMINI_API_KEY = window.process?.env?.VITE_GEMINI_API_KEY || "";
 
     const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
