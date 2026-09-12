@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CardCraft AI — E-commerce Studio</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
 
@@ -15,7 +15,7 @@
         </h1>
         
         <div id="auth-status" class="flex items-center gap-4">
-            <span class="text-sm text-slate-400">Загрузка...</span>
+            <span class="text-sm text-slate-400">Инициализация...</span>
         </div>
     </header>
 
@@ -24,15 +24,15 @@
             <h2 class="text-lg font-semibold text-white mb-2">Вход / Регистрация</h2>
             <p class="text-sm text-slate-400 mb-6">Получите 3 бесплатные генерации сразу после входа!</p>
             
-            <form id="login-form" class="space-y-4">
+            <div class="space-y-4">
                 <div>
-                    <input type="email" id="email-input" required placeholder="name@example.com" class="w-full px-4 py-2.5 rounded-lg bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+                    <input type="email" id="email-input" placeholder="name@example.com" class="w-full px-4 py-2.5 rounded-lg bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500">
                 </div>
-                <button type="submit" id="login-btn" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 font-medium rounded-lg transition-colors">
+                <button type="button" id="login-btn" onclick="handleLogin()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 font-medium rounded-lg transition-colors cursor-pointer">
                     Войти по Email
                 </button>
-            </form>
-            <div id="auth-message" class="mt-4 text-sm text-center text-red-400 hidden"></div>
+            </div>
+            <div id="auth-message" class="mt-4 text-sm text-center hidden"></div>
         </div>
 
         <div class="bg-slate-900 border border-slate-800 p-6 rounded-xl shadow-xl min-h-[300px]">
@@ -45,22 +45,34 @@
         const SUPABASE_URL = 'https://zecwwgefsbpiadifnnuc.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InplY3d3Z2Vmc2JwaWFkaWZubnVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyMjM2MDMsImV4cCI6MjEwNDc5OTYwM30.PfH7zSMWJkzEhYg4qQ2OyASmQoElh3XzK3YwNc4_9Cg';
 
-        let supabase = null;
-        if (window.supabase) {
-            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let supabaseClient = null;
+
+        function initApp() {
+            const authStatus = document.getElementById('auth-status');
+            const msgBox = document.getElementById('auth-message');
+
+            try {
+                if (window.supabase) {
+                    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    checkUser();
+                } else {
+                    authStatus.innerHTML = '<span class="text-sm text-red-400">Ошибка загрузки SDK</span>';
+                }
+            } catch (err) {
+                authStatus.innerHTML = '<span class="text-sm text-red-400">Ошибка подключения</span>';
+                msgBox.innerText = err.message;
+                msgBox.className = 'mt-4 text-sm text-center text-red-400';
+            }
         }
 
-        const authStatus = document.getElementById('auth-status');
-        const loginCard = document.getElementById('login-card');
-        const loginForm = document.getElementById('login-form');
-        const authMessage = document.getElementById('auth-message');
-
         async function checkUser() {
-            if (!supabase) return;
-            const { data: { user } } = await supabase.auth.getUser();
+            const authStatus = document.getElementById('auth-status');
+            const loginCard = document.getElementById('login-card');
+
+            const { data: { user }, error } = await supabaseClient.auth.getUser();
             
             if (user) {
-                const { data: profile } = await supabase.from('profiles').select('credits').eq('id', user.id).single();
+                const { data: profile } = await supabaseClient.from('profiles').select('credits').eq('id', user.id).single();
                 const credits = profile ? profile.credits : 0;
 
                 authStatus.innerHTML = `
@@ -77,27 +89,41 @@
             }
         }
 
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email-input').value;
-            authMessage.classList.add('hidden');
-            
-            const { error } = await supabase.auth.signInWithOtp({ email });
-            
-            if (error) {
-                authMessage.innerText = 'Ошибка: ' + error.message;
-                authMessage.classList.remove('hidden');
-            } else {
-                alert('Ссылка для входа отправлена на ваш email!');
+        async function handleLogin() {
+            const email = document.getElementById('email-input').value.trim();
+            const msgBox = document.getElementById('auth-message');
+            const btn = document.getElementById('login-btn');
+
+            if (!email) {
+                msgBox.innerText = 'Введите ваш Email';
+                msgBox.className = 'mt-4 text-sm text-center text-amber-400';
+                return;
             }
-        });
+
+            btn.disabled = true;
+            btn.innerText = 'Отправка...';
+            msgBox.className = 'mt-4 text-sm text-center hidden';
+
+            const { error } = await supabaseClient.auth.signInWithOtp({ email });
+
+            btn.disabled = false;
+            btn.innerText = 'Войти по Email';
+
+            if (error) {
+                msgBox.innerText = 'Ошибка: ' + error.message;
+                msgBox.className = 'mt-4 text-sm text-center text-red-400';
+            } else {
+                msgBox.innerText = 'Ссылка для входа отправлена на ваш Email!';
+                msgBox.className = 'mt-4 text-sm text-center text-green-400';
+            }
+        }
 
         async function logout() {
-            await supabase.auth.signOut();
+            await supabaseClient.auth.signOut();
             checkUser();
         }
 
-        checkUser();
+        window.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
 </html>
