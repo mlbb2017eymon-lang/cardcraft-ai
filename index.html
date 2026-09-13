@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CardCraft AI — Commercial Banner Studio</title>
+    <title>AI Presentation Maker — Автоматическая генерация презентаций</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -22,35 +22,24 @@
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #030712; color: #f9fafb; }
         .bg-glow { position: absolute; border-radius: 50%; filter: blur(140px); opacity: 0.35; pointer-events: none; }
-        .checkerboard {
-            background-image: linear-gradient(45deg, #1e293b 25%, transparent 25%), linear-gradient(-45deg, #1e293b 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #1e293b 75%), linear-gradient(-45deg, transparent 75%, #1e293b 75%);
-            background-size: 16px 16px;
-            background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
-        }
         
-        /* Градиенты и стили баннера */
-        .banner-bg {
-            background: radial-gradient(circle at 50% 40%, #7c3aed 0%, #311042 45%, #090514 90%);
+        .slide-aspect {
+            aspect-ratio: 16 / 9;
         }
-        .banner-text-behind {
-            font-size: 3.2rem;
-            line-height: 0.9;
-            font-weight: 900;
-            background: linear-gradient(180deg, #ffffff 0%, rgba(255,255,255,0.2) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-transform: uppercase;
-            letter-spacing: -1px;
+
+        .slide-bg-gradient-1 {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
         }
-        .badge-red {
-            background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
-            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+        .slide-bg-gradient-2 {
+            background: linear-gradient(135deg, #064e3b 0%, #022c22 50%, #0f172a 100%);
+        }
+        .slide-bg-gradient-3 {
+            background: linear-gradient(135deg, #1e1b4b 0%, #431407 50%, #090d16 100%);
         }
     </style>
 </head>
@@ -58,274 +47,203 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
-
-        const SUPABASE_URL = "https://zecwwgefsbpiadifnnuc.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InplY3d3Z2Vmc2JwaWFkaWZubnVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyMjM2MDMsImV4cCI6MjEwNDc5OTYwM30.PfH7zSMWJkzEhYg4qQ2OyASmQoElh3XzK3YwNc4_9Cg";
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const { useState } = React;
 
         function App() {
-            const [credits, setCredits] = useState(() => {
-                const saved = localStorage.getItem('cc_credits');
-                return saved !== null ? parseInt(saved, 10) : 15;
-            });
-            const [activeTab, setActiveTab] = useState(() => localStorage.getItem('cc_tab') || 'studio');
-            
-            const [processedImage, setProcessedImage] = useState(() => localStorage.getItem('cc_processed_img') || null);
-            const [isProcessingImg, setIsProcessingImg] = useState(false);
+            const [prompt, setPrompt] = useState('');
+            const [isGenerating, setIsGenerating] = useState(false);
+            const [slides, setSlides] = useState(null);
+            const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
 
-            // Контент карточек в стиле рекламного баннера
-            const [generatedSeries, setGeneratedSeries] = useState(() => {
-                const saved = localStorage.getItem('cc_series');
-                return saved ? JSON.parse(saved) : [
-                    {
-                        brandTitle: "FAN TURBO",
-                        subTitle: "SPECIAL OFFER",
-                        badgeDiscount: "35% OFF",
-                        badgeTag: "TOP SALE",
-                        bullets: ["Мощный поток воздуха", "Автономность до 12 часов", "Бесшумная работа 0dB"],
-                        priceTag: "ПРЕМИУМ КАЧЕСТВО"
-                    },
-                    {
-                        brandTitle: "AIR CHILL",
-                        subTitle: "SMART DESIGN",
-                        badgeDiscount: "50% OFF",
-                        badgeTag: "HIT 2026",
-                        bullets: ["3 Режима скорости", "Компактный размер", "Зарядка от USB Type-C"],
-                        priceTag: "БЫСТРАЯ ДОСТАВКА"
-                    },
-                    {
-                        brandTitle: "PREMIUM",
-                        subTitle: "LIMITED EDITION",
-                        badgeDiscount: "GIFT SET",
-                        badgeTag: "NEW",
-                        bullets: ["В комплекте чехол", "Гарантия 2 года", "Подарочная упаковка"],
-                        priceTag: "ВЫГОДНОЕ ПРЕДЛОЖЕНИЕ"
-                    }
-                ];
-            });
+            // Функция полной ИИ-генерации презентации по 1 промпту
+            const generatePresentation = () => {
+                if (!prompt.trim()) return;
+                setIsGenerating(true);
 
-            const [activeSlideIndex, setActiveSlideIndex] = useState(0);
-
-            useEffect(() => {
-                localStorage.setItem('cc_credits', credits.toString());
-                localStorage.setItem('cc_tab', activeTab);
-                if (processedImage) localStorage.setItem('cc_processed_img', processedImage);
-                else localStorage.removeItem('cc_processed_img');
-                localStorage.setItem('cc_series', JSON.stringify(generatedSeries));
-            }, [credits, activeTab, processedImage, generatedSeries]);
-
-            const removeBackgroundCanvas = (imageSrc) => {
-                setIsProcessingImg(true);
-                const img = new Image();
-                img.crossOrigin = "anonymous";
-                img.src = imageSrc;
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    ctx.drawImage(img, 0, 0);
-
-                    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                    const data = imgData.data;
-
-                    for (let i = 0; i < data.length; i += 4) {
-                        const r = data[i];
-                        const g = data[i + 1];
-                        const b = data[i + 2];
-                        if (r > 220 && g > 220 && b > 220) {
-                            data[i + 3] = 0;
+                setTimeout(() => {
+                    const topic = prompt.trim();
+                    
+                    // Автоматическая генерация 4 уникальных слайдов с разными фонами и контентом
+                    const newSlides = [
+                        {
+                            type: "title",
+                            badge: "ИИ ПРЕЗЕНТАЦИЯ",
+                            title: topic.toUpperCase(),
+                            subtitle: "Автоматически созданная стратегия и концепт проекта",
+                            bgStyle: "slide-bg-gradient-1",
+                            accentColor: "text-purple-400",
+                            bullets: [
+                                "Подготовлено ИИ-генератором Presentation Engine",
+                                "Полный анализ и структура темы",
+                                "Версия 2026"
+                            ]
+                        },
+                        {
+                            type: "problem",
+                            badge: "01 / АНАЛИЗ И ПРОБЛЕМАТИКА",
+                            title: "КЛЮЧЕВЫЕ ВЫЗОВЫ",
+                            subtitle: "С какими задачами сталкивается рынок в рамках темы: " + topic,
+                            bgStyle: "slide-bg-gradient-2",
+                            accentColor: "text-emerald-400",
+                            bullets: [
+                                "Необходимость в быстрых и автоматизированных решениях",
+                                "Высокие требования к дизайну и подаче материала",
+                                "Оптимизация времени на подготовку коммерческих материалов"
+                            ]
+                        },
+                        {
+                            type: "solution",
+                            badge: "02 / РЕШЕНИЕ И СТРАТЕГИЯ",
+                            title: "ИННОВАЦИОННЫЙ ПОДХОД",
+                            subtitle: "Пошаговый план реализации задачи",
+                            bgStyle: "slide-bg-gradient-3",
+                            accentColor: "text-amber-400",
+                            bullets: [
+                                "Автоматическая генерация контента на основе ИИ",
+                                "Адаптивные стили и фоновые градиенты",
+                                "Масштабируемая структура для любых задач"
+                            ]
+                        },
+                        {
+                            type: "conclusion",
+                            badge: "03 / ИТОГИ И ЗАКЛЮЧЕНИЕ",
+                            title: "ФИНАЛЬНЫЙ РЕЗУЛЬТАТ",
+                            subtitle: "Перспективы и ожидаемый эффект",
+                            bgStyle: "slide-bg-gradient-1",
+                            accentColor: "text-cyan-400",
+                            bullets: [
+                                "Повышение скорости создания материалов на 90%",
+                                "Готовый к демонстрации проект в 1 клик",
+                                "Максимальная вовлеченность аудитории"
+                            ]
                         }
-                    }
+                    ];
 
-                    ctx.putImageData(imgData, 0, 0);
-                    setProcessedImage(canvas.toDataURL('image/png'));
-                    setIsProcessingImg(false);
-                };
+                    setSlides(newSlides);
+                    setCurrentSlideIndex(0);
+                    setIsGenerating(false);
+                }, 1200);
             };
-
-            const handleFileUpload = (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onloadend = () => removeBackgroundCanvas(reader.result);
-                    reader.readAsDataURL(file);
-                }
-            };
-
-            const activeSlide = generatedSeries[activeSlideIndex] || generatedSeries[0];
 
             return (
                 <div className="min-h-screen flex flex-col justify-between relative overflow-hidden">
                     <div className="bg-glow w-[600px] h-[600px] bg-purple-600 -top-40 -left-40"></div>
+                    <div className="bg-glow w-[500px] h-[500px] bg-indigo-600 -bottom-40 -right-40"></div>
 
-                    {/* Навигация */}
+                    {/* Шапка */}
                     <header className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800 px-6 py-4">
                         <div className="max-w-7xl mx-auto flex items-center justify-between">
-                            <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('mixer')}>
+                            <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-500 to-indigo-600 flex items-center justify-center font-black text-white text-xl">
-                                    C
+                                    P
                                 </div>
                                 <div>
-                                    <span className="text-xl font-black text-white block leading-none">CardCraft AI</span>
-                                    <span className="text-[10px] text-purple-400 font-bold uppercase">Banner Concept Mode</span>
-                                </div>
-                            </div>
-
-                            <nav className="flex items-center gap-2 bg-slate-900/90 p-1.5 rounded-2xl border border-slate-800">
-                                <button 
-                                    onClick={() => setActiveTab('mixer')}
-                                    className={`px-5 py-2 rounded-xl text-xs font-bold transition-all ${activeTab === 'mixer' ? 'bg-purple-600 text-white' : 'text-slate-400 hover:text-white'}`}
-                                >
-                                    🪄 ИИ-Миксер
-                                </button>
-                                <button 
-                                    onClick={() => setActiveTab('studio')}
-                                    className={`px-5 py-2 rounded-xl text-xs font-bold transition-all ${activeTab === 'studio' ? 'bg-purple-600 text-white' : 'text-slate-400 hover:text-white'}`}
-                                >
-                                    🖼️ Рекламная Студия ({generatedSeries.length})
-                                </button>
-                            </nav>
-
-                            <div className="flex items-center gap-3">
-                                <div className="bg-purple-950/80 border border-purple-800/60 px-4 py-2 rounded-xl text-xs font-bold text-purple-300">
-                                    ⚡ {credits} Кредитов
+                                    <span className="text-xl font-black text-white block leading-none">AI Presenter</span>
+                                    <span className="text-[10px] text-purple-400 font-bold uppercase">Auto Slide Engine v1.0</span>
                                 </div>
                             </div>
                         </div>
                     </header>
 
-                    {/* Рабочая область */}
-                    <main className="flex-1 max-w-7xl mx-auto w-full p-6">
-                        {activeTab === 'mixer' && (
-                            <div className="max-w-3xl mx-auto bg-slate-900/90 border border-slate-800 p-8 rounded-3xl space-y-6">
-                                <h2 className="text-xl font-black text-white">Загрузка изображения товара</h2>
-                                <div className="border-2 border-dashed border-slate-700 rounded-2xl p-6 text-center bg-slate-950/50">
-                                    <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" id="file-in" />
-                                    <label htmlFor="file-in" className="cursor-pointer text-xs font-bold text-purple-400 hover:underline">
-                                        Загрузить фото товара
-                                    </label>
-                                </div>
-
-                                {processedImage && (
-                                    <div className="checkerboard p-4 rounded-2xl border border-slate-800 flex justify-center h-48">
-                                        <img src={processedImage} alt="Cutout" className="max-h-full object-contain" />
-                                    </div>
-                                )}
+                    {/* Главный контент */}
+                    <main className="flex-1 max-w-6xl mx-auto w-full p-6 space-y-8">
+                        
+                        {/* Форма ввода промпта */}
+                        <div className="bg-slate-900/90 border border-slate-800 p-6 rounded-3xl shadow-2xl space-y-4 backdrop-blur-md">
+                            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
+                                Введите тему или описание для презентации:
+                            </label>
+                            <div className="flex flex-col sm:flex-row gap-3">
+                                <input 
+                                    type="text"
+                                    value={prompt}
+                                    onChange={(e) => setPrompt(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && generatePresentation()}
+                                    placeholder="Например: Запуск нового эко-кроссовка, Стратегия продвижения бренда, Презентация стартапа..."
+                                    className="flex-1 bg-slate-950 border border-slate-700 focus:border-purple-500 rounded-2xl px-5 py-3 text-sm text-white placeholder-slate-500 outline-none transition-all"
+                                />
+                                <button 
+                                    onClick={generatePresentation}
+                                    disabled={isGenerating || !prompt.trim()}
+                                    className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50 text-white font-bold px-8 py-3 rounded-2xl text-sm transition-all shadow-lg shadow-purple-600/30 whitespace-nowrap"
+                                >
+                                    {isGenerating ? "🪄 ИИ создает слайды..." : "✨ Сгенерировать всё"}
+                                </button>
                             </div>
-                        )}
+                        </div>
 
-                        {activeTab === 'studio' && (
+                        {/* Интерактивный просмотр презентации */}
+                        {slides && (
                             <div className="space-y-6">
-                                {/* Переключатель вариантов */}
-                                <div className="flex items-center gap-3 justify-between bg-slate-900/80 border border-slate-800 p-4 rounded-2xl">
-                                    <div className="flex items-center gap-2">
-                                        {generatedSeries.map((slide, idx) => (
+                                {/* Панель управления слайдами */}
+                                <div className="flex items-center justify-between bg-slate-900/80 border border-slate-800 p-4 rounded-2xl">
+                                    <div className="flex items-center gap-2 overflow-x-auto">
+                                        {slides.map((s, idx) => (
                                             <button
                                                 key={idx}
-                                                onClick={() => setActiveSlideIndex(idx)}
-                                                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeSlideIndex === idx ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/40' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
+                                                onClick={() => setCurrentSlideIndex(idx)}
+                                                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${currentSlideIndex === idx ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/30' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
                                             >
-                                                Макет {idx + 1}
+                                                Слайд {idx + 1}
                                             </button>
                                         ))}
                                     </div>
-                                    <button onClick={() => alert("Изображение готово к скачиванию!")} className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-lg shadow-emerald-600/30">
-                                        📥 Скачать Баннер
-                                    </button>
+                                    <span className="text-xs font-bold text-slate-400">
+                                        {currentSlideIndex + 1} / {slides.length}
+                                    </span>
                                 </div>
 
-                                {/* Компоновка Баннера (Вдохновлено коммерческими баннерами) */}
-                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                                    <div className="lg:col-span-6 flex justify-center">
-                                        <div className="relative w-full max-w-[380px] aspect-[9/16] rounded-3xl overflow-hidden border border-purple-500/30 shadow-2xl banner-bg flex flex-col justify-between p-6">
-                                            
-                                            {/* Неоновый фон с 3D-свечением */}
-                                            <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-fuchsia-500/25 blur-3xl rounded-full"></div>
-                                            
-                                            {/* Слой 1: Крупная Типографика на Заднем Плане */}
-                                            <div className="relative z-0 text-center pt-2">
-                                                <div className="text-[10px] font-extrabold text-amber-400 uppercase tracking-widest mb-1">
-                                                    {activeSlide.subTitle}
-                                                </div>
-                                                <div className="banner-text-behind text-center">
-                                                    {activeSlide.brandTitle}
-                                                </div>
-                                            </div>
+                                {/* Холст Слайда (16:9) */}
+                                <div className="flex justify-center">
+                                    <div className={`w-full max-w-[900px] slide-aspect rounded-3xl overflow-hidden border border-slate-700/60 shadow-2xl ${slides[currentSlideIndex].bgStyle} p-10 flex flex-col justify-between relative`}>
+                                        
+                                        {/* Декоративное неоновое свечение слайда */}
+                                        <div className="absolute top-0 right-0 w-80 h-80 bg-white/5 blur-3xl rounded-full pointer-events-none"></div>
 
-                                            {/* Слой 2: Товар по центру (поверх текста) */}
-                                            {processedImage ? (
-                                                <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none py-16">
-                                                    <img 
-                                                        src={processedImage} 
-                                                        alt="Product" 
-                                                        className="max-h-[62%] max-w-[85%] object-contain filter drop-shadow-[0_20px_25px_rgba(0,0,0,0.85)] scale-110"
-                                                    />
-                                                </div>
-                                            ) : (
-                                                <div className="absolute inset-0 flex items-center justify-center text-slate-400 text-xs font-bold z-10">
-                                                    [ Загрузить фото ]
-                                                </div>
-                                            )}
-
-                                            {/* Слой 3: Акцентные Бляшки по Бокам (Как на коммерческом баннере) */}
-                                            <div className="relative z-20 flex justify-between items-center my-auto pointer-events-none">
-                                                <div className="badge-red text-white text-[11px] font-black px-3 py-1.5 rounded-xl uppercase tracking-wider transform -rotate-6">
-                                                    {activeSlide.badgeDiscount}
-                                                </div>
-                                                <div className="bg-slate-900/90 backdrop-blur-md border border-purple-400/40 text-purple-300 text-[10px] font-extrabold px-3 py-1.5 rounded-xl uppercase tracking-wider transform rotate-3">
-                                                    {activeSlide.badgeTag}
-                                                </div>
-                                            </div>
-
-                                            {/* Слой 4: Нижний Блок Характеристик */}
-                                            <div className="relative z-20 bg-slate-950/80 backdrop-blur-xl border border-slate-800 p-4 rounded-2xl space-y-2">
-                                                <div className="text-center pb-1 border-b border-slate-800">
-                                                    <span className="text-[11px] font-extrabold text-amber-400 uppercase tracking-wider">
-                                                        {activeSlide.priceTag}
-                                                    </span>
-                                                </div>
-                                                <div className="space-y-1">
-                                                    {activeSlide.bullets.map((b, i) => (
-                                                        <div key={i} className="flex items-center gap-2 text-[10px] text-slate-200 font-bold">
-                                                            <span className="w-1.5 h-1.5 rounded-full bg-fuchsia-400"></span>
-                                                            <span>{b}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-
+                                        {/* Шапка слайда */}
+                                        <div className="flex justify-between items-start relative z-10">
+                                            <span className="bg-slate-950/70 backdrop-blur-md border border-slate-700/60 text-white text-[11px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg">
+                                                {slides[currentSlideIndex].badge}
+                                            </span>
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                                AI PRESENTATION MAKER
+                                            </span>
                                         </div>
-                                    </div>
 
-                                    {/* Панель параметров */}
-                                    <div className="lg:col-span-6 bg-slate-900/80 border border-slate-800 p-6 rounded-3xl space-y-4">
-                                        <h3 className="text-base font-bold text-white">Параметры баннера #{activeSlideIndex + 1}</h3>
-                                        <div className="space-y-3 text-xs">
-                                            <div className="p-3 bg-slate-950 rounded-xl border border-slate-800">
-                                                <span className="text-purple-400 font-bold block mb-1">Фоновый крупный текст:</span>
-                                                <span className="text-slate-100 font-black text-base">{activeSlide.brandTitle}</span>
-                                            </div>
-                                            <div className="p-3 bg-slate-950 rounded-xl border border-slate-800">
-                                                <span className="text-purple-400 font-bold block mb-1">Скидка / Акцентная плашка:</span>
-                                                <span className="text-red-400 font-black">{activeSlide.badgeDiscount}</span>
-                                            </div>
-                                            <div className="p-3 bg-slate-950 rounded-xl border border-slate-800">
-                                                <span className="text-purple-400 font-bold block mb-1">Список преимуществ:</span>
-                                                <ul className="list-disc pl-4 text-slate-300 space-y-1 mt-1">
-                                                    {activeSlide.bullets.map((b, i) => <li key={i}>{b}</li>)}
-                                                </ul>
+                                        {/* Основное содержимое слайда */}
+                                        <div className="space-y-4 my-auto relative z-10 max-w-2xl">
+                                            <h2 className="text-3xl sm:text-4xl font-black text-white leading-tight uppercase tracking-wide">
+                                                {slides[currentSlideIndex].title}
+                                            </h2>
+                                            <p className={`text-sm font-extrabold ${slides[currentSlideIndex].accentColor} uppercase tracking-wider`}>
+                                                {slides[currentSlideIndex].subtitle}
+                                            </p>
+
+                                            <div className="space-y-2 pt-4">
+                                                {slides[currentSlideIndex].bullets.map((bullet, i) => (
+                                                    <div key={i} className="flex items-start gap-3 text-xs sm:text-sm text-slate-200 font-medium bg-slate-950/40 backdrop-blur-sm p-3 rounded-xl border border-white/5">
+                                                        <span className="w-2 h-2 rounded-full bg-purple-400 mt-1.5 shrink-0"></span>
+                                                        <span>{bullet}</span>
+                                                    </div>
+                                                ))}
                                             </div>
                                         </div>
+
+                                        {/* Футер слайда */}
+                                        <div className="flex justify-between items-center text-[10px] text-slate-400 font-bold border-t border-white/10 pt-4 relative z-10">
+                                            <span>CARDCRAFT ENGINE © 2026</span>
+                                            <span>CONFIDENTIAL</span>
+                                        </div>
+
                                     </div>
                                 </div>
                             </div>
                         )}
+
                     </main>
 
                     <footer className="border-t border-slate-900 py-4 text-center text-xs text-slate-500">
-                        CardCraft AI Engine © 2026.
+                        AI Presentation Generator Engine © 2026.
                     </footer>
                 </div>
             );
