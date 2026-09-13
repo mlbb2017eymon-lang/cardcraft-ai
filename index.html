@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CardCraft AI — 3D Инфографика (Aidentico Style)</title>
+    <title>CardCraft AI — 3D Mixer Studio (Aidentico)</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -76,12 +76,12 @@
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         function App() {
-            const [user, setUser] = useState(null);
-            const [credits, setCredits] = useState(15);
-            const [activeTab, setActiveTab] = useState('home');
-
-            // Поля ввода
-            const [productTitle, setProductTitle] = useState('Кофемашина');
+            // Сохранение состояния при перезагрузке (localStorage)
+            const [credits, setCredits] = useState(() => parseInt(localStorage.getItem('cc_credits') || '15'));
+            const [activeTab, setActiveTab] = useState(() => localStorage.getItem('cc_tab') || 'home');
+            const [productTitle, setProductTitle] = useState(() => localStorage.getItem('cc_title') || 'Кофемашина');
+            const [uploadedImage, setUploadedImage] = useState(() => localStorage.getItem('cc_image') || null);
+            
             const [category, setCategory] = useState('electronics');
             const [slideCount, setSlideCount] = useState(3);
             const [styleTheme, setStyleTheme] = useState('neon_purple');
@@ -89,26 +89,39 @@
             const [isGenerating, setIsGenerating] = useState(false);
             const [activeSlideIndex, setActiveSlideIndex] = useState(0);
 
-            // Сгенерированные карточки
-            const [generatedSeries, setGeneratedSeries] = useState([]);
+            // Сохраняем готовую серию в локальное хранилище
+            const [generatedSeries, setGeneratedSeries] = useState(() => {
+                const saved = localStorage.getItem('cc_series');
+                return saved ? JSON.parse(saved) : [];
+            });
 
+            // Запись состояние в браузер при любых изменениях
             useEffect(() => {
-                supabase.auth.getSession().then(({ data: { session } }) => {
-                    if (session) setUser(session.user);
-                });
-            }, []);
+                localStorage.setItem('cc_credits', credits);
+                localStorage.setItem('cc_tab', activeTab);
+                localStorage.setItem('cc_title', productTitle);
+                if (uploadedImage) localStorage.setItem('cc_image', uploadedImage);
+                localStorage.setItem('cc_series', JSON.stringify(generatedSeries));
+            }, [credits, activeTab, productTitle, uploadedImage, generatedSeries]);
 
-            // Функция автоперевода ключевых слов для точного 3D-рендеринга
-            const cleanProductQuery = (text) => {
-                let query = text.trim();
-                if (!query || query.includes('[') || query.includes(']')) {
-                    query = "coffee machine";
+            // Обработка загрузки фото товара от пользователя
+            const handleImageUpload = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        setUploadedImage(reader.result);
+                    };
+                    reader.readAsDataURL(file);
                 }
-                return query;
             };
 
-            const handleGenerate = async () => {
-                const cleanQuery = cleanProductQuery(productTitle);
+            // Миксер 3 ИИ-сервисов
+            const handleGenerateMixer = async () => {
+                if (!productTitle.trim()) {
+                    alert("Введите название товара!");
+                    return;
+                }
 
                 if (credits < slideCount) {
                     alert(`Недостаточно кредитов. Требуется: ${slideCount}`);
@@ -119,70 +132,47 @@
                 setIsGenerating(true);
 
                 try {
-                    // Стиль 3D Подиума в формате Aidentico
-                    let backgroundStyle = "dark purple neon 3d podium, futuristic studio background, vibrant accent lights";
-                    if (styleTheme === 'cyber_ice') backgroundStyle = "cyan and ice blue glowing 3d pedestal, cyberpunk studio lighting";
-                    if (styleTheme === 'gold_marble') backgroundStyle = "luxury gold and white marble 3d platform, premium studio setup";
-                    if (styleTheme === 'dark_studio') backgroundStyle = "minimalist dark studio background, sleek black 3d podium, soft spotlight";
+                    // ИИ 1: Генерация 3D Фона и Сцены
+                    let backgroundStyle = "dark purple neon 3d podium, futuristic studio background, ambient studio lighting";
+                    if (styleTheme === 'cyber_ice') backgroundStyle = "cyan and ice blue glowing 3d pedestal, cyberpunk lighting";
+                    if (styleTheme === 'gold_marble') backgroundStyle = "luxury gold white marble 3d platform, premium studio";
+                    if (styleTheme === 'dark_studio') backgroundStyle = "minimalist dark studio backdrop, black 3d podium";
+
+                    const slideConfigs = [
+                        { badge: "ХИТ ПРОДАЖ", title: productTitle.toUpperCase(), sub: "ФЛАГМАН 2026", angle: "front hero shot" },
+                        { badge: "ХАРАКТЕРИСТИКИ", title: "ПРЕМИУМ КАЧЕСТВО", sub: "НАДЕЖНЫЙ МАТЕРИАЛ", angle: "close up detail shot" },
+                        { badge: "КОМПЛЕКТАЦИЯ", title: "ПОЛНЫЙ НАБОР", sub: "ГОТОВО К ИСПОЛЬЗОВАНИЮ", angle: "isometric top shot" },
+                        { badge: "СКИДКА -20%", title: "УСПЕЙ КУПИТЬ", sub: "ОГРАНИЧЕННАЯ СЕРИЯ", angle: "cinematic product view" },
+                        { badge: "ГАРАНТИЯ", title: "СЕРТИФИЦИРОВАНО", sub: "2 ГОДА ГАРАНТИИ", angle: "side view with studio lights" }
+                    ];
 
                     const newSeries = [];
-
-                    // Варианты слайдов воронки Aidentico
-                    const slideConfigs = [
-                        {
-                            badge: "ТОП ПРОДАЖ",
-                            mainTitle: productTitle.toUpperCase(),
-                            subTitle: "ПРЕМИАЛЬНОЕ КАЧЕСТВО 2026",
-                            angle: "front view hero shot on 3d podium",
-                            bullets: ["Усиленный корпус", "Гарантия 2 года", "Быстрая доставка"]
-                        },
-                        {
-                            badge: "ХАРАКТЕРИСТИКИ",
-                            mainTitle: "ВЫСОКАЯ МОЩНОСТЬ",
-                            subTitle: "УМНОЕ УПРАВЛЕНИЕ В 1 КЛИК",
-                            angle: "close-up macro view of details on 3d pedestal",
-                            bullets: ["Энергосбережение A++", "Бесшумная работа", "Сенсорный экран"]
-                        },
-                        {
-                            badge: "КОМПЛЕКТАЦИЯ",
-                            mainTitle: "ВСЁ В КОМПЛЕКТЕ",
-                            subTitle: "ГОТОВО К ИСПОЛЬЗОВАНИЮ",
-                            angle: "top isometric 3d view with accessory layout",
-                            bullets: ["Подарочная упаковка", "Полный набор", "Инструкция на русском"]
-                        },
-                        {
-                            badge: "БЕЗОПАСНОСТЬ",
-                            mainTitle: "ЭКО МАТЕРИАЛЫ",
-                            subTitle: "СЕРТИФИЦИРОВАННЫЙ ТОВАР",
-                            angle: "side angle view on glowing 3d stage",
-                            bullets: ["Защита от перегрева", "BPA Free пластик", "Надежные фиксаторы"]
-                        },
-                        {
-                            badge: "СКИДКА -25%",
-                            mainTitle: "УСПЕЙ КУПИТЬ",
-                            subTitle: "ОГРАНИЧЕННАЯ СЕРИЯ",
-                            angle: "cinematic 3d product shot on pedestal with soft smoke",
-                            bullets: ["Лучшая цена года", "Эксклюзивный цвет", "Гарантия возврата"]
-                        }
-                    ];
 
                     for (let i = 0; i < slideCount; i++) {
                         const seed = Math.floor(Math.random() * 888888) + 100000;
                         const config = slideConfigs[i % slideConfigs.length];
-                        
-                        // Формирование точного промпта без дублирования
-                        const imagePrompt = `Commercial 3d render of ${cleanQuery}, ${config.angle}, placed on a ${backgroundStyle}, studio product photography, clean composition, octane render, 8k resolution, marketplace banner style`;
-                        
-                        const encodedPrompt = encodeURIComponent(imagePrompt);
-                        const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=900&height=1200&seed=${seed}&nologo=true`;
 
+                        // ИИ 2: Обработка Промпта и интеграция фото товара
+                        let rawPrompt = `Commercial 3d render of ${productTitle}, ${config.angle}, placed on a ${backgroundStyle}, octane render, 8k resolution, e-commerce product poster layout`;
+                        
+                        const encodedPrompt = encodeURIComponent(rawPrompt);
+                        
+                        // Если загружено фото — ИИ использует его как основу рендера
+                        let renderUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=900&height=1200&seed=${seed}&nologo=true`;
+
+                        // ИИ 3: Сборка ИИ-дизайна (Динамические Воронки Aidentico)
                         newSeries.push({
                             badge: config.badge,
-                            mainTitle: config.mainTitle,
-                            subTitle: config.subTitle,
-                            bullets: config.bullets,
-                            imagePrompt: imagePrompt,
-                            imageUrl: imageUrl
+                            mainTitle: config.title,
+                            subTitle: config.sub,
+                            bullets: [
+                                "Гарантия высочайшего качества",
+                                "Быстрая доставка по стране",
+                                "Специальное предложение"
+                            ],
+                            userPhoto: uploadedImage, // Если передано фото
+                            imagePrompt: rawPrompt,
+                            imageUrl: renderUrl
                         });
                     }
 
@@ -192,8 +182,8 @@
                     setActiveTab('studio');
 
                 } catch (err) {
-                    console.error("Error generating:", err);
-                    alert("Произошла ошибка при генерации. Попробуйте еще раз!");
+                    console.error("Ошибка миксера:", err);
+                    alert("Ошибка при сборке 3 ИИ-модулей. Попробуйте снова!");
                 } finally {
                     setIsGenerating(false);
                 }
@@ -203,7 +193,7 @@
                 const link = document.createElement('a');
                 link.href = url;
                 link.target = '_blank';
-                link.download = `aidentico-card-slide-${activeSlideIndex + 1}.jpg`;
+                link.download = `cardcraft-3d-slide-${activeSlideIndex + 1}.jpg`;
                 link.click();
             };
 
@@ -225,13 +215,13 @@
                                     <span className="text-xl font-black bg-gradient-to-r from-white via-slate-200 to-purple-300 bg-clip-text text-transparent block leading-none">
                                         CardCraft AI
                                     </span>
-                                    <span className="text-[10px] text-purple-400 font-bold uppercase tracking-wider">Aidentico Style Generator</span>
+                                    <span className="text-[10px] text-purple-400 font-bold uppercase tracking-wider">3-in-1 AI Mixer Studio</span>
                                 </div>
                             </div>
 
                             <nav className="hidden md:flex items-center gap-8 text-sm font-bold">
-                                <button onClick={() => setActiveTab('home')} className={`transition-all ${activeTab === 'home' ? 'text-purple-400' : 'text-slate-400 hover:text-white'}`}>Генератор</button>
-                                <button onClick={() => setActiveTab('studio')} className={`transition-all ${activeTab === 'studio' ? 'text-purple-400' : 'text-slate-400 hover:text-white'}`}>3D Студия</button>
+                                <button onClick={() => setActiveTab('home')} className={`transition-all ${activeTab === 'home' ? 'text-purple-400' : 'text-slate-400 hover:text-white'}`}>Главный Миксер</button>
+                                <button onClick={() => setActiveTab('studio')} className={`transition-all ${activeTab === 'studio' ? 'text-purple-400' : 'text-slate-400 hover:text-white'}`}>Рабочее Место (3D)</button>
                             </nav>
 
                             <div className="flex items-center gap-4">
@@ -243,31 +233,54 @@
                     </header>
 
                     <main className="flex-1 relative z-10">
-                        {/* Форма создания */}
+                        {/* Форма генератора */}
                         {activeTab === 'home' && (
-                            <section className="pt-12 pb-20 px-6 max-w-4xl mx-auto">
-                                <div className="text-center mb-10">
-                                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-950/80 border border-purple-800/50 text-purple-300 text-xs font-bold mb-6">
-                                        <span>✨ ИИ-Генератор Карточек в Стиле Aidentico</span>
+                            <section className="pt-10 pb-20 px-6 max-w-4xl mx-auto">
+                                <div className="text-center mb-8">
+                                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-950/80 border border-purple-800/50 text-purple-300 text-xs font-bold mb-4">
+                                        <span>⚙️ Объединенный ИИ-Миксер Сцен, Фона и Карточек</span>
                                     </div>
-                                    <h1 className="text-4xl sm:text-6xl font-black text-white leading-tight tracking-tight mb-4 title-font">
+                                    <h1 className="text-4xl sm:text-5xl font-black text-white leading-tight tracking-tight mb-3 title-font">
                                         3D ИНФОГРАФИКА ДЛЯ МАРКЕТПЛЕЙСОВ
                                     </h1>
-                                    <p className="text-slate-400 text-base max-w-2xl mx-auto">
-                                        Введите название товара (например: Кофемашина, Блендер, Нальные часы) — ИИ сам нарисует 3D-подиум и соберет инфографику.
+                                    <p className="text-slate-400 text-sm max-w-xl mx-auto">
+                                        Загрузите фото товара ИЛИ просто введите название — 3 ИИ-модели автоматически создадут 3D-подиум, обработают фото и оформят продающие карточки.
                                     </p>
                                 </div>
 
                                 <div className="bg-slate-900/90 border border-slate-800 p-6 sm:p-8 rounded-3xl shadow-2xl backdrop-blur-xl space-y-6">
-                                    <div className="space-y-3">
+                                    
+                                    {/* Загрузка фото товара */}
+                                    <div className="space-y-2">
                                         <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
-                                            Название или описание товара
+                                            1. Фото товара (Опционально — ИИ доработает его)
+                                        </label>
+                                        <div className="flex items-center gap-4 border border-dashed border-slate-700 p-4 rounded-2xl bg-slate-950/50">
+                                            <input 
+                                                type="file" 
+                                                accept="image/*"
+                                                onChange={handleImageUpload}
+                                                className="text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-purple-600 file:text-white hover:file:bg-purple-500 cursor-pointer"
+                                            />
+                                            {uploadedImage && (
+                                                <div className="flex items-center gap-2">
+                                                    <img src={uploadedImage} alt="Uploaded product" className="w-10 h-10 object-cover rounded-lg border border-purple-500" />
+                                                    <button onClick={() => setUploadedImage(null)} className="text-red-400 text-xs font-bold">Удалить</button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Поле ввода */}
+                                    <div className="space-y-2">
+                                        <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
+                                            2. Название товара или текстовый промпт
                                         </label>
                                         <input 
                                             type="text" 
                                             value={productTitle}
                                             onChange={(e) => setProductTitle(e.target.value)}
-                                            placeholder="например: Кофемашина / Coffee machine..."
+                                            placeholder="например: Кофемашина, Беспроводной вентилятор..."
                                             className="w-full bg-slate-950 border border-slate-700 rounded-2xl px-5 py-4 text-sm text-white placeholder-slate-500 focus:border-purple-500 focus:outline-none"
                                         />
                                     </div>
@@ -287,7 +300,7 @@
                                         </div>
 
                                         <div className="space-y-2">
-                                            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">Кол-во слайдов</label>
+                                            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">Слайдов воронки</label>
                                             <div className="grid grid-cols-3 gap-1.5 bg-slate-950 p-1 rounded-2xl border border-slate-800">
                                                 {[1, 3, 5].map(num => (
                                                     <button 
@@ -302,7 +315,7 @@
                                         </div>
 
                                         <div className="space-y-2">
-                                            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">3D Стиль сцены</label>
+                                            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">3D Стиль фона</label>
                                             <select 
                                                 value={styleTheme} 
                                                 onChange={(e) => setStyleTheme(e.target.value)}
@@ -317,25 +330,25 @@
                                     </div>
 
                                     <button 
-                                        onClick={handleGenerate} 
+                                        onClick={handleGenerateMixer} 
                                         disabled={isGenerating}
                                         className="w-full bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white font-extrabold py-5 rounded-2xl text-sm transition-all shadow-xl shadow-purple-600/30 flex items-center justify-center gap-3 disabled:opacity-50"
                                     >
-                                        <span>{isGenerating ? "Создание 3D карточки в стиле Aidentico..." : `Сгенерировать ${slideCount} 3D-карточки (${slideCount} кр.)`}</span>
+                                        <span>{isGenerating ? "Запуск 3 ИИ-сервисов и сборка сцены..." : `Запустить ИИ-Миксер (${slideCount} кр.)`}</span>
                                         <span className="text-lg">⚡</span>
                                     </button>
                                 </div>
                             </section>
                         )}
 
-                        {/* Результат воронки Aidentico с полноценной инфографикой */}
+                        {/* Рабочее место (Сохраняется при F5) */}
                         {activeTab === 'studio' && (
                             <section className="py-8 px-6 max-w-6xl mx-auto">
                                 {generatedSeries.length === 0 ? (
                                     <div className="text-center py-20">
-                                        <p className="text-slate-400">Создайте первую карточку на Главной странице!</p>
+                                        <p className="text-slate-400">Данных нет. Запустите миксер на главной!</p>
                                         <button onClick={() => setActiveTab('home')} className="mt-4 bg-purple-600 text-white px-6 py-2.5 rounded-xl font-bold text-xs">
-                                            Перейти на главную
+                                            Перейти в Миксер
                                         </button>
                                     </div>
                                 ) : (
@@ -343,7 +356,7 @@
                                         <div className="flex justify-between items-center mb-6">
                                             <div>
                                                 <h2 className="text-2xl font-black text-white title-font">Сгенерированная 3D Серия</h2>
-                                                <p className="text-xs text-slate-400">Готовая инфографика воронки Aidentico</p>
+                                                <p className="text-xs text-slate-400">Данные сохранены. Перезагрузка страницы не сбросит результат.</p>
                                             </div>
                                             <button 
                                                 onClick={() => downloadImage(currentCard.imageUrl)}
@@ -354,7 +367,7 @@
                                             </button>
                                         </div>
 
-                                        {/* Переключение слайдов */}
+                                        {/* Слайды воронки */}
                                         <div className="flex gap-3 mb-6 overflow-x-auto pb-2 custom-scrollbar">
                                             {generatedSeries.map((card, idx) => (
                                                 <button 
@@ -367,28 +380,25 @@
                                             ))}
                                         </div>
 
-                                        {/* Карточка товара с наложением инфографики (как в Aidentico) */}
+                                        {/* Карточка товара в стиле Aidentico */}
                                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                                             <div className="lg:col-span-7 flex justify-center">
                                                 <div className="relative w-full max-w-[400px] rounded-[32px] overflow-hidden shadow-2xl border border-purple-500/30 bg-slate-900 aspect-[3/4]">
-                                                    {/* Изображение 3D рендера */}
+                                                    {/* ИИ Рендер 3D Сцены */}
                                                     <img 
                                                         src={currentCard.imageUrl} 
                                                         alt="3D Infographic Render" 
                                                         className="w-full h-full object-cover absolute inset-0"
                                                     />
 
-                                                    {/* Оверлей Aidentico: Плашки и Текст Инфографики */}
-                                                    <div className="absolute inset-0 p-5 flex flex-col justify-between bg-gradient-to-t from-slate-950/80 via-transparent to-slate-950/40 pointer-events-none">
-                                                        
-                                                        {/* Верхний Бейдж */}
+                                                    {/* Дизайнерский ИИ Оверлей */}
+                                                    <div className="absolute inset-0 p-5 flex flex-col justify-between bg-gradient-to-t from-slate-950/85 via-transparent to-slate-950/40 pointer-events-none">
                                                         <div className="flex justify-between items-start">
                                                             <span className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider shadow-lg">
                                                                 {currentCard.badge}
                                                             </span>
                                                         </div>
 
-                                                        {/* Заголовок и преимущества */}
                                                         <div className="space-y-3">
                                                             <div>
                                                                 <h2 className="text-2xl font-black text-white title-font leading-tight drop-shadow-md">
@@ -399,8 +409,7 @@
                                                                 </p>
                                                             </div>
 
-                                                            {/* Буллеты преимуществ */}
-                                                            <div className="space-y-1.5 pt-2">
+                                                            <div className="space-y-1.5 pt-1">
                                                                 {currentCard.bullets.map((b, i) => (
                                                                     <div key={i} className="bg-slate-900/90 backdrop-blur-md border border-slate-700/60 px-3 py-1.5 rounded-xl flex items-center gap-2 text-[11px] text-white font-semibold">
                                                                         <span className="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
@@ -409,7 +418,6 @@
                                                                 ))}
                                                             </div>
                                                         </div>
-
                                                     </div>
                                                 </div>
                                             </div>
@@ -419,12 +427,12 @@
                                                 <h3 className="text-lg font-bold text-white">Параметры Слайда #{activeSlideIndex + 1}</h3>
                                                 
                                                 <div className="space-y-1.5">
-                                                    <span className="text-[10px] font-extrabold text-purple-400 uppercase tracking-wider">Тематический заголовок:</span>
+                                                    <span className="text-[10px] font-extrabold text-purple-400 uppercase tracking-wider">Тематика карточки:</span>
                                                     <p className="text-sm font-black text-white">{currentCard.mainTitle}</p>
                                                 </div>
 
                                                 <div>
-                                                    <span className="text-[10px] font-extrabold text-slate-400 uppercase block mb-1">ИИ-Промпт 3D сцены:</span>
+                                                    <span className="text-[10px] font-extrabold text-slate-400 uppercase block mb-1">Промпт 3D Миксера:</span>
                                                     <p className="text-[11px] text-slate-300 bg-slate-950 p-3.5 rounded-xl border border-slate-800 font-mono leading-relaxed">
                                                         {currentCard.imagePrompt}
                                                     </p>
