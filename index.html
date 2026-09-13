@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CardCraft AI — PRO 3D Инфографика для Маркетплейсов</title>
+    <title>CardCraft AI — 3D Инфографика для Маркетплейсов</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -72,7 +72,6 @@
 
         const SUPABASE_URL = "https://zecwwgefsbpiadifnnuc.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InplY3d3Z2Vmc2JwaWFkaWZubnVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyMjM2MDMsImV4cCI6MjEwNDc5OTYwM30.PfH7zSMWJkzEhYg4qQ2OyASmQoElh3XzK3YwNc4_9Cg";
-        const GEMINI_API_KEY = "AQ.Ab8RN6LOLliooqSKnkHARTnLS1wDlCtsqFU_8LJBDJs1H7oNuQ";
 
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -81,16 +80,16 @@
             const [credits, setCredits] = useState(15);
             const [activeTab, setActiveTab] = useState('home');
 
-            // Входные параметры
+            // Параметры генерации
             const [prompt, setPrompt] = useState('');
-            const [category, setCategory] = useState('electronics'); // Категория товара
+            const [category, setCategory] = useState('electronics');
             const [slideCount, setSlideCount] = useState(3);
             const [styleTheme, setStyleTheme] = useState('neon_purple');
 
             const [isGenerating, setIsGenerating] = useState(false);
             const [activeSlideIndex, setActiveSlideIndex] = useState(0);
 
-            // Результаты 3D генерации
+            // Сгенерированная 3D-серия
             const [generatedSeries, setGeneratedSeries] = useState([]);
 
             useEffect(() => {
@@ -99,15 +98,15 @@
                 });
             }, []);
 
-            // Генерация всей 3D сцены по промпту + копирайтинг инфографики
+            // Безопасный генератор 3D сцен без внешних ограничений
             const handleGenerate = async () => {
                 if (!prompt.trim()) {
-                    alert("Введите название или описание товара!");
+                    alert("Пожалуйста, введите название товара или промпт!");
                     return;
                 }
 
                 if (credits < slideCount) {
-                    alert(`Вам нужно ${slideCount} кредитов. У вас: ${credits}`);
+                    alert(`Недостаточно кредитов. Требуется: ${slideCount}`);
                     setActiveTab('pricing');
                     return;
                 }
@@ -115,60 +114,47 @@
                 setIsGenerating(true);
 
                 try {
-                    // 1. Gemini составляет профессиональные промпты для 3D сцен и воронку продаж
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{
-                                parts: [{
-                                    text: `Ты топовый 3D арт-директор инфографики для маркетплейсов (Ozon, Wildberries).
-                                    Создай серию из ${slideCount} продающих 3D карточек для товара: "${prompt}".
-                                    Категория: ${category}. Стиль оформления: ${styleTheme}.
+                    // Формируем стилистику для 3D подиума
+                    let stylePromptDetails = "glowing dark purple neon 3d podium, futuristic studio background, vibrant contrast";
+                    if (styleTheme === 'cyber_ice') stylePromptDetails = "cyan and ice blue glowing 3d pedestal, cyberpunk studio lighting";
+                    if (styleTheme === 'gold_marble') stylePromptDetails = "luxury gold and white marble 3d platform, premium studio setup";
+                    if (styleTheme === 'dark_studio') stylePromptDetails = "minimalist dark studio background, sleek black 3d podium, soft spotlight";
 
-                                    Сгенерируй строго JSON массив из ${slideCount} объектов:
-                                    [
-                                      {
-                                        "imagePrompt": "Английский детальный промпт для нейросети: 3D commercial render of ${prompt} on glowing futuristic podium, studio lighting, octane render, 8k, cinematic product poster",
-                                        "title": "Заголовок слайда (напр: ТУРБО ВЕНТИЛЯТОР)",
-                                        "subtitle": "Подзаголовок (напр: МОЩНОСТЬ И СТИЛЬ)",
-                                        "discountTag": "Акционный тэг (напр: 15% OFF или ХИТ OZON)",
-                                        "bullets": ["Преимущество 1", "Преимущество 2", "Преимущество 3"]
-                                      }
-                                    ]
-                                    Ответь ТОЛЬКО сырым JSON массивом.`
-                                }]
-                            }]
-                        })
-                    });
+                    const productQuery = prompt.trim();
+                    const newSeries = [];
 
-                    const data = await response.json();
-                    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-                    const jsonMatch = rawText.match(/\[[\s\S]*\]/);
-
-                    if (!jsonMatch) throw new Error("Ошибка обработки ответа ИИ");
-
-                    const parsedCards = JSON.parse(jsonMatch[0]);
-
-                    // 2. ИИ генерирует готовую 3D сцену с товаром на подиуме целиком
-                    const cardsWithImages = parsedCards.map((card) => {
-                        const seed = Math.floor(Math.random() * 99999);
-                        const encodedPrompt = encodeURIComponent(`${card.imagePrompt}, commercial 3d render, product standing on 3d podium, glossy finish, cinematic lighting`);
+                    for (let i = 0; i < slideCount; i++) {
+                        const seed = Math.floor(Math.random() * 999999);
+                        const angle = i === 0 ? "front view hero shot" : i === 1 ? "close up detail view" : "dynamic angle 3d render";
                         
-                        return {
-                            ...card,
-                            imageUrl: `https://image.pollinations.ai/prompt/${encodedPrompt}?width=800&height=1066&seed=${seed}&nologo=true`
-                        };
-                    });
+                        const fullImagePrompt = `3d commercial product render of ${productQuery}, ${angle}, placed on a ${stylePromptDetails}, studio lighting, octane render, 8k resolution, e-commerce infographic poster style, highly detailed`;
+                        const encodedPrompt = encodeURIComponent(fullImagePrompt);
 
-                    setGeneratedSeries(cardsWithImages);
+                        // Прямая генерация 3D арта целиком
+                        const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=800&height=1066&seed=${seed}&nologo=true`;
+
+                        newSeries.push({
+                            title: i === 0 ? `${productQuery.toUpperCase()}` : i === 1 ? "ПРЕИМУЩЕСТВА И КАЧЕСТВО" : "КОМПЛЕКТАЦИЯ И СТИЛЬ",
+                            subtitle: i === 0 ? "NEW MODEL 2026" : i === 1 ? "PREMIUM QUALITY" : "CLICK & ORDER",
+                            discountTag: i === 0 ? "ХИТ OZON" : i === 1 ? "15% OFF" : "TOP SALE",
+                            imagePrompt: fullImagePrompt,
+                            imageUrl: imageUrl,
+                            bullets: [
+                                "Инновационный 3D дизайн",
+                                "Высокое качество материалов",
+                                "Быстрая доставка и гарантия"
+                            ]
+                        });
+                    }
+
+                    setGeneratedSeries(newSeries);
                     setCredits(prev => prev - slideCount);
                     setActiveSlideIndex(0);
                     setActiveTab('studio');
 
                 } catch (err) {
-                    console.error(err);
-                    alert("Произошла ошибка при генерации. Попробуйте еще раз.");
+                    console.error("Error generating:", err);
+                    alert("Произошла ошибка при сборке. Попробуйте ещё раз!");
                 } finally {
                     setIsGenerating(false);
                 }
@@ -178,7 +164,7 @@
                 const link = document.createElement('a');
                 link.href = url;
                 link.target = '_blank';
-                link.download = `3d-card-ozon-slide-${activeSlideIndex + 1}.jpg`;
+                link.download = `3d-card-slide-${activeSlideIndex + 1}.jpg`;
                 link.click();
             };
 
@@ -189,7 +175,7 @@
                     <div className="bg-glow w-[650px] h-[650px] bg-purple-600 -top-40 -left-40"></div>
                     <div className="bg-glow w-[550px] h-[550px] bg-indigo-600 bottom-0 right-0"></div>
 
-                    {/* Шапка */}
+                    {/* Навигация */}
                     <header className="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/80 px-6 py-4">
                         <div className="max-w-7xl mx-auto flex items-center justify-between">
                             <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('home')}>
@@ -200,7 +186,7 @@
                                     <span className="text-xl font-black bg-gradient-to-r from-white via-slate-200 to-purple-300 bg-clip-text text-transparent block leading-none">
                                         CardCraft AI
                                     </span>
-                                    <span className="text-[10px] text-purple-400 font-bold uppercase tracking-wider">3D Infographic Studio for E-commerce</span>
+                                    <span className="text-[10px] text-purple-400 font-bold uppercase tracking-wider">3D Infographic Studio</span>
                                 </div>
                             </div>
 
@@ -219,12 +205,12 @@
                     </header>
 
                     <main className="flex-1 relative z-10">
-                        {/* Форма на Главной */}
+                        {/* Главный блок ввода */}
                         {activeTab === 'home' && (
                             <section className="pt-12 pb-20 px-6 max-w-4xl mx-auto">
                                 <div className="text-center mb-10">
                                     <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-950/80 border border-purple-800/50 text-purple-300 text-xs font-bold mb-6">
-                                        <span>🎨 Профессиональный ИИ-дизайн карточек Ozon & Wildberries</span>
+                                        <span>🎨 Генерация 3D Инфографики по Промпту</span>
                                     </div>
                                     <h1 className="text-4xl sm:text-6xl font-black text-white leading-tight tracking-tight mb-4 title-font">
                                         3D ИНФОГРАФИКА ДЛЯ МАРКЕТПЛЕЙСОВ
@@ -237,13 +223,13 @@
                                 <div className="bg-slate-900/90 border border-slate-800 p-6 sm:p-8 rounded-3xl shadow-2xl backdrop-blur-xl space-y-6">
                                     <div className="space-y-3">
                                         <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
-                                            Описание товара или ссылка (например: Кофемашина, Вентилятор, Часы)
+                                            Описание товара или промпт (например: Handheld fan, Coffee machine, Smartwatch)
                                         </label>
                                         <input 
                                             type="text" 
                                             value={prompt}
                                             onChange={(e) => setPrompt(e.target.value)}
-                                            placeholder="Автоматическая зерновая кофемашина с капучинатором..."
+                                            placeholder="Commercial product poster for handheld fan on 3d podium..."
                                             className="w-full bg-slate-950 border border-slate-700 rounded-2xl px-5 py-4 text-sm text-white placeholder-slate-500 focus:border-purple-500 focus:outline-none"
                                         />
                                     </div>
@@ -257,9 +243,8 @@
                                                 className="w-full bg-slate-950 border border-slate-700 rounded-2xl px-4 py-3 text-xs font-bold text-white focus:border-purple-500 focus:outline-none"
                                             >
                                                 <option value="electronics">Бытовая техника & Электроника</option>
-                                                <option value="accessories">Аксессуары & Часы</option>
+                                                <option value="accessories">Часы & Аксессуары</option>
                                                 <option value="home">Товары для дома</option>
-                                                <option value="beauty">Красота & Уход</option>
                                             </select>
                                         </div>
 
@@ -285,10 +270,10 @@
                                                 onChange={(e) => setStyleTheme(e.target.value)}
                                                 className="w-full bg-slate-950 border border-slate-700 rounded-2xl px-4 py-3 text-xs font-bold text-white focus:border-purple-500 focus:outline-none"
                                             >
-                                                <option value="neon_purple">💜 Неоновый Подиум (Как на 3 фото)</option>
+                                                <option value="neon_purple">💜 Неоновый Подиум (3D)</option>
                                                 <option value="cyber_ice">🩵 Кибер Лед & Свет</option>
-                                                <option value="gold_marble">🏆 Премиум Золото и Мрамор</option>
-                                                <option value="dark_studio">🖤 Тёмная Минималистичная Студия</option>
+                                                <option value="gold_marble">🏆 Премиум Золото & Мрамор</option>
+                                                <option value="dark_studio">🖤 Тёмный Студийный Минимализм</option>
                                             </select>
                                         </div>
                                     </div>
@@ -298,29 +283,29 @@
                                         disabled={isGenerating}
                                         className="w-full bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white font-extrabold py-5 rounded-2xl text-sm transition-all shadow-xl shadow-purple-600/30 flex items-center justify-center gap-3 disabled:opacity-50"
                                     >
-                                        <span>{isGenerating ? "ИИ генерирует 3D арт и инфографику..." : `Сгенерировать ${slideCount} 3D-карточек (${slideCount} кр.)`}</span>
+                                        <span>{isGenerating ? "ИИ строит 3D арт и сцену целиком..." : `Сгенерировать ${slideCount} 3D-карточек (${slideCount} кр.)`}</span>
                                         <span className="text-lg">✨</span>
                                     </button>
                                 </div>
                             </section>
                         )}
 
-                        {/* 3D Студия */}
+                        {/* Галерея готовых карточек */}
                         {activeTab === 'studio' && (
                             <section className="py-8 px-6 max-w-6xl mx-auto">
                                 {generatedSeries.length === 0 ? (
                                     <div className="text-center py-20">
-                                        <p className="text-slate-400">Сначала создайте 3D-карточки на Главной!</p>
+                                        <p className="text-slate-400">Создайте первую серию на Главной странице!</p>
                                         <button onClick={() => setActiveTab('home')} className="mt-4 bg-purple-600 text-white px-6 py-2.5 rounded-xl font-bold text-xs">
-                                            Перейти к созданию
+                                            Перейти на главную
                                         </button>
                                     </div>
                                 ) : (
                                     <>
                                         <div className="flex justify-between items-center mb-6">
                                             <div>
-                                                <h2 className="text-2xl font-black text-white title-font">Готовая 3D Серия Карточек</h2>
-                                                <p className="text-xs text-slate-400">Сгенерировано полностью нейросетью по единому промпту</p>
+                                                <h2 className="text-2xl font-black text-white title-font">Сгенерированная 3D Серия</h2>
+                                                <p className="text-xs text-slate-400">Полный ИИ-рендер с 3D-подиумом</p>
                                             </div>
                                             <button 
                                                 onClick={() => downloadImage(currentCard.imageUrl)}
@@ -339,15 +324,15 @@
                                                     onClick={() => setActiveSlideIndex(idx)}
                                                     className={`px-5 py-3 rounded-2xl text-xs font-bold transition-all border ${activeSlideIndex === idx ? 'bg-purple-600 border-purple-400 text-white shadow-lg shadow-purple-600/30' : 'bg-slate-900 border-slate-800 text-slate-400'}`}
                                                 >
-                                                    Слайд {idx + 1}: {card.title}
+                                                    Слайд {idx + 1}
                                                 </button>
                                             ))}
                                         </div>
 
-                                        {/* Просмотр готовой 3D картинки */}
+                                        {/* Просмотр карточки */}
                                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                                             <div className="lg:col-span-7 flex justify-center">
-                                                <div className="relative w-full max-w-[420px] rounded-[36px] overflow-hidden shadow-2xl border border-purple-500/30 group">
+                                                <div className="relative w-full max-w-[420px] rounded-[36px] overflow-hidden shadow-2xl border border-purple-500/30">
                                                     <img 
                                                         src={currentCard.imageUrl} 
                                                         alt="3D Infographic Render" 
@@ -356,27 +341,18 @@
                                                 </div>
                                             </div>
 
-                                            {/* Промпт и Буллеты */}
+                                            {/* Информация о рендере */}
                                             <div className="lg:col-span-5 bg-slate-900/80 p-6 rounded-3xl border border-slate-800 space-y-4">
-                                                <h3 className="text-lg font-bold text-white">Структура Слайда #{activeSlideIndex + 1}</h3>
+                                                <h3 className="text-lg font-bold text-white">Параметры 3D Слайда #{activeSlideIndex + 1}</h3>
                                                 
                                                 <div className="space-y-1.5">
-                                                    <span className="text-[10px] font-extrabold text-purple-400 uppercase tracking-wider">Заголовок:</span>
+                                                    <span className="text-[10px] font-extrabold text-purple-400 uppercase tracking-wider">Тематика:</span>
                                                     <p className="text-sm font-black text-white">{currentCard.title}</p>
                                                 </div>
 
-                                                <div className="space-y-1.5">
-                                                    <span className="text-[10px] font-extrabold text-purple-400 uppercase tracking-wider">Продающие буллеты:</span>
-                                                    {currentCard.bullets?.map((b, i) => (
-                                                        <div key={i} className="text-xs bg-slate-950 p-3 rounded-xl text-slate-200 font-semibold border border-slate-800 flex items-center gap-2">
-                                                            <span className="text-purple-400">✦</span> <span>{b}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-
-                                                <div className="pt-2">
+                                                <div>
                                                     <span className="text-[10px] font-extrabold text-slate-400 uppercase block mb-1">ИИ-Промпт 3D сцены:</span>
-                                                    <p className="text-[11px] text-slate-400 bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono">
+                                                    <p className="text-[11px] text-slate-300 bg-slate-950 p-3.5 rounded-xl border border-slate-800 font-mono leading-relaxed">
                                                         {currentCard.imagePrompt}
                                                     </p>
                                                 </div>
