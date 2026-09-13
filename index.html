@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CardCraft AI — Part 3: Studio & Overlay Engine</title>
+    <title>CardCraft AI — Part 3: Premium Vibe & Layout Engine</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -33,6 +33,10 @@
             background-size: 16px 16px;
             background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
         }
+        .neon-glow { filter: drop-shadow(0 0 12px rgba(168, 85, 247, 0.45)); }
+        .podium-gradient {
+            background: radial-gradient(circle at 50% 60%, #4c1d95 0%, #1e1b4b 40%, #090d16 85%);
+        }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen antialiased">
@@ -50,29 +54,47 @@
                 const saved = localStorage.getItem('cc_credits');
                 return saved !== null ? parseInt(saved, 10) : 15;
             });
-            const [activeTab, setActiveTab] = useState(() => localStorage.getItem('cc_tab') || 'mixer');
+            const [activeTab, setActiveTab] = useState(() => localStorage.getItem('cc_tab') || 'studio');
             
-            // Вырезанное фото
             const [processedImage, setProcessedImage] = useState(() => localStorage.getItem('cc_processed_img') || null);
             const [isProcessingImg, setIsProcessingImg] = useState(false);
 
-            // Сохраненные слайды серии
+            // Обновленная структура слайдов с вайбовыми характеристиками Aidentico
             const [generatedSeries, setGeneratedSeries] = useState(() => {
                 const saved = localStorage.getItem('cc_series');
                 return saved ? JSON.parse(saved) : [
                     {
-                        badge: "ХИТ ПРОДАЖ",
+                        badge: "🔥 ХИТ ПРОДАЖ 2026",
                         mainTitle: "ВЕНТИЛЯТОР",
-                        subTitle: "ФЛАГМАН 2026",
-                        bullets: ["Гарантия высочайшего качества", "Быстрая доставка по стране", "Специальное предложение"],
-                        bgUrl: "https://image.pollinations.ai/prompt/empty%20dark%20purple%20neon%203d%20podium%20pedestal%20futuristic%20studio%20setup?width=900&height=1200&seed=777&nologo=true"
+                        subTitle: "ПРЕМИАЛЬНЫЙ 3D КОМФОРТ",
+                        features: [
+                            { icon: "⚡", title: "МОЩНОСТЬ", desc: "35W Turbo Air" },
+                            { icon: "🔋", title: "АВТОНОМНОСТЬ", desc: "До 12 часов" }
+                        ],
+                        bullets: ["Гарантия премиум качества", "Ультратихий мотор 0dB", "Доставка по Узбекистану"],
+                        bgUrl: "https://image.pollinations.ai/prompt/empty%20glowing%203d%20neon%20podium%20futuristic%20dark%20studio?width=900&height=1200&seed=101&nologo=true"
                     },
                     {
-                        badge: "ХАРАКТЕРИСТИКИ",
+                        badge: "⚙️ ХАРАКТЕРИСТИКИ",
                         mainTitle: "МОЩНЫЙ И ТИХИЙ",
-                        subTitle: "ПРЕМИУМ МАТЕРИАЛЫ",
-                        bullets: ["3 режима скорости", "Бесшумный мотор", "Автономность до 12 часов"],
-                        bgUrl: "https://image.pollinations.ai/prompt/empty%20cyan%20blue%20glowing%203d%20pedestal%20cyberpunk%20studio?width=900&height=1200&seed=888&nologo=true"
+                        subTitle: "ИННОВАЦИОННЫЙ ОБДУВ",
+                        features: [
+                            { icon: "🔇", title: "ШУМ", desc: "Всего 15 дБ" },
+                            { icon: "🌀", title: "ОБДУВ", desc: "360° Циркуляция" }
+                        ],
+                        bullets: ["3 режима скорости", "Управление с пультом", "Энергоэффективность A++"],
+                        bgUrl: "https://image.pollinations.ai/prompt/empty%20cyan%20blue%20glowing%203d%20pedestal%20cyberpunk%20studio?width=900&height=1200&seed=202&nologo=true"
+                    },
+                    {
+                        badge: "📦 КОМПЛЕКТАЦИЯ",
+                        mainTitle: "ПОЛНЫЙ НАБОР",
+                        subTitle: "ГОТОВО К ИСПОЛЬЗОВАНИЮ",
+                        features: [
+                            { icon: "🔌", title: "КАБЕЛЬ", desc: "USB Type-C 2m" },
+                            { icon: "🛡️", title: "ГАРАНТИЯ", desc: "2 года сервиса" }
+                        ],
+                        bullets: ["Инструкция на русском", "Подарочная упаковка", "Кабель быстрой зарядки"],
+                        bgUrl: "https://image.pollinations.ai/prompt/empty%20gold%20white%20marble%203d%20platform%20studio?width=900&height=1200&seed=303&nologo=true"
                     }
                 ];
             });
@@ -141,7 +163,7 @@
                                 </div>
                                 <div>
                                     <span className="text-xl font-black text-white block leading-none">CardCraft AI</span>
-                                    <span className="text-[10px] text-purple-400 font-bold uppercase">Studio & Renderer v4.0</span>
+                                    <span className="text-[10px] text-purple-400 font-bold uppercase">Aidentico Vibe v4.1</span>
                                 </div>
                             </div>
 
@@ -172,11 +194,11 @@
                     <main className="flex-1 max-w-7xl mx-auto w-full p-6">
                         {activeTab === 'mixer' && (
                             <div className="max-w-3xl mx-auto bg-slate-900/90 border border-slate-800 p-8 rounded-3xl space-y-6">
-                                <h2 className="text-xl font-black text-white">Модуль 2: Фото товара с прозрачным фоном</h2>
+                                <h2 className="text-xl font-black text-white">Загрузка фото товара</h2>
                                 <div className="border-2 border-dashed border-slate-700 rounded-2xl p-6 text-center bg-slate-950/50">
                                     <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" id="file-in" />
                                     <label htmlFor="file-in" className="cursor-pointer text-xs font-bold text-purple-400 hover:underline">
-                                        Загрузить / Сменить фото товара
+                                        Загрузить фото товара для идеального 3D-подиума
                                     </label>
                                 </div>
 
@@ -197,86 +219,125 @@
                                             <button
                                                 key={idx}
                                                 onClick={() => setActiveSlideIndex(idx)}
-                                                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeSlideIndex === idx ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/30' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
+                                                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeSlideIndex === idx ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/40' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
                                             >
-                                                Слайд {idx + 1} ({slide.badge})
+                                                Слайд {idx + 1}
                                             </button>
                                         ))}
                                     </div>
-                                    <button onClick={() => alert("Изображение сохранено!")} className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-lg shadow-emerald-600/20">
-                                        📥 Скачать HD Изображение
+                                    <button onClick={() => alert("Изображение готово к сохранению!")} className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-lg shadow-emerald-600/30">
+                                        📥 Скачать HD Карточку
                                     </button>
                                 </div>
 
-                                {/* Карточка Aidentico Layer Compositor */}
+                                {/* Карточка Aidentico Compositor */}
                                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                                    <div className="lg:col-span-5 flex justify-center">
-                                        <div className="relative w-full max-w-[380px] aspect-[3/4] rounded-3xl overflow-hidden border border-purple-500/30 shadow-2xl shadow-purple-950/50 group bg-slate-900">
+                                    <div className="lg:col-span-6 flex justify-center">
+                                        <div className="relative w-full max-w-[400px] aspect-[3/4] rounded-3xl overflow-hidden border border-purple-500/40 shadow-2xl shadow-purple-950/60 podium-gradient">
                                             
-                                            {/* Слой 1: 3D Фон / Подиум */}
-                                            <img src={activeSlide.bgUrl} alt="3D Pedestal" className="absolute inset-0 w-full h-full object-cover" />
+                                            {/* Слой 1: 3D Фон */}
+                                            <img 
+                                                src={activeSlide.bgUrl} 
+                                                alt="3D Pedestal" 
+                                                className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-80"
+                                                onError={(e) => { e.target.style.display = 'none'; }}
+                                            />
 
-                                            {/* Слой 2: Вырезанное Фото Товара (Посадка на подиум) */}
-                                            {processedImage && (
-                                                <div className="absolute inset-0 flex items-center justify-center p-8 z-10 pointer-events-none">
+                                            {/* Неоновое свечение подиума (SVG) */}
+                                            <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-72 h-20 bg-purple-500/30 blur-2xl rounded-full"></div>
+                                            <div className="absolute bottom-16 left-1/2 -translate-x-1/2 w-56 h-8 bg-indigo-400/40 blur-xl rounded-full"></div>
+
+                                            {/* Слой 2: Прозрачное Фото Товара */}
+                                            {processedImage ? (
+                                                <div className="absolute inset-0 flex items-center justify-center pb-8 z-10 pointer-events-none">
                                                     <img 
                                                         src={processedImage} 
                                                         alt="Product" 
-                                                        className="max-h-[55%] max-w-[80%] object-contain filter drop-shadow-[0_20px_25px_rgba(0,0,0,0.85)]"
+                                                        className="max-h-[58%] max-w-[78%] object-contain filter drop-shadow-[0_25px_30px_rgba(0,0,0,0.95)]"
                                                     />
+                                                </div>
+                                            ) : (
+                                                <div className="absolute inset-0 flex items-center justify-center text-slate-500 text-xs font-bold z-10">
+                                                    [ Загрузите фото товара в Миксере ]
                                                 </div>
                                             )}
 
-                                            {/* Слой 3: Оверлей Aidentico Инфографики */}
-                                            <div className="absolute inset-0 z-20 flex flex-col justify-between p-6 pointer-events-none">
-                                                {/* Верхние плашки */}
+                                            {/* Слой 3: Неоновые боковые плашки характеристик (Вайб Aidentico) */}
+                                            <div className="absolute inset-0 z-20 flex flex-col justify-between p-5 pointer-events-none">
+                                                
+                                                {/* Верхняя шапка */}
                                                 <div className="flex justify-between items-start">
-                                                    <span className="bg-purple-600 text-white text-[11px] font-black px-3 py-1 rounded-full uppercase tracking-wider shadow-lg shadow-purple-600/50">
+                                                    <span className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-[11px] font-black px-3.5 py-1.5 rounded-xl uppercase tracking-wider shadow-lg shadow-purple-600/50 border border-purple-400/40">
                                                         {activeSlide.badge}
                                                     </span>
-                                                    <span className="bg-slate-900/80 backdrop-blur-md border border-slate-700/60 text-amber-400 text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
-                                                        ★ 4.9 WB/Ozon
+                                                    <span className="bg-slate-950/80 backdrop-blur-md border border-slate-700/80 text-amber-400 text-[10px] font-extrabold px-3 py-1.5 rounded-xl flex items-center gap-1 shadow-md">
+                                                        ★ 4.9 Top Sale
                                                     </span>
                                                 </div>
 
-                                                {/* Нижняя часть с текстом и буллетами */}
-                                                <div className="bg-slate-950/85 backdrop-blur-md border border-slate-800/80 p-4 rounded-2xl space-y-2">
+                                                {/* Боковые плавающие выноски характеристик */}
+                                                {activeSlide.features && (
+                                                    <div className="space-y-2 relative top-2">
+                                                        {activeSlide.features.map((feat, i) => (
+                                                            <div 
+                                                                key={i} 
+                                                                className={`inline-flex items-center gap-2.5 px-3 py-1.5 rounded-2xl bg-slate-950/85 backdrop-blur-lg border border-purple-500/40 shadow-xl neon-glow ${i % 2 === 1 ? 'ml-auto flex-row-reverse' : ''}`}
+                                                            >
+                                                                <span className="w-7 h-7 rounded-xl bg-purple-600/80 flex items-center justify-center text-xs">
+                                                                    {feat.icon}
+                                                                </span>
+                                                                <div className="text-left">
+                                                                    <div className="text-[9px] font-black text-purple-300 uppercase leading-none">{feat.title}</div>
+                                                                    <div className="text-[11px] font-bold text-white leading-tight">{feat.desc}</div>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+
+                                                {/* Нижняя монолитная инфографика */}
+                                                <div className="bg-slate-950/90 backdrop-blur-xl border border-slate-800 p-4 rounded-2xl space-y-2 shadow-2xl">
                                                     <div>
-                                                        <h3 className="text-xl font-black text-white leading-tight uppercase tracking-wide">
+                                                        <h3 className="text-lg font-black text-white leading-none uppercase tracking-wide">
                                                             {activeSlide.mainTitle}
                                                         </h3>
-                                                        <p className="text-[10px] font-bold text-purple-400 uppercase tracking-widest">
+                                                        <p className="text-[10px] font-extrabold text-purple-400 uppercase tracking-widest mt-1">
                                                             {activeSlide.subTitle}
                                                         </p>
                                                     </div>
 
-                                                    <div className="space-y-1 pt-1">
+                                                    <div className="grid grid-cols-1 gap-1 pt-1 border-t border-slate-800/80">
                                                         {activeSlide.bullets.map((b, i) => (
-                                                            <div key={i} className="flex items-center gap-2 text-[10px] text-slate-300 font-medium">
+                                                            <div key={i} className="flex items-center gap-2 text-[10px] text-slate-200 font-semibold">
                                                                 <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
                                                                 <span>{b}</span>
                                                             </div>
                                                         ))}
                                                     </div>
                                                 </div>
+
                                             </div>
 
                                         </div>
                                     </div>
 
-                                    {/* Информация о промпте и характеристиках */}
-                                    <div className="lg:col-span-7 bg-slate-900/80 border border-slate-800 p-6 rounded-3xl space-y-4">
+                                    {/* Настройка текстов текущего слайда */}
+                                    <div className="lg:col-span-6 bg-slate-900/80 border border-slate-800 p-6 rounded-3xl space-y-4">
                                         <h3 className="text-base font-bold text-white">Параметры Слайда #{activeSlideIndex + 1}</h3>
-                                        <div className="space-y-2 text-xs">
+                                        <div className="space-y-3 text-xs">
                                             <div className="p-3 bg-slate-950 rounded-xl border border-slate-800">
-                                                <span className="text-purple-400 font-bold block mb-1">Заголовок:</span>
-                                                <span className="text-slate-200">{activeSlide.mainTitle}</span>
+                                                <span className="text-purple-400 font-bold block mb-1">Главный заголовок:</span>
+                                                <span className="text-slate-100 font-bold text-sm">{activeSlide.mainTitle}</span>
                                             </div>
                                             <div className="p-3 bg-slate-950 rounded-xl border border-slate-800">
-                                                <span className="text-purple-400 font-bold block mb-1">Преимущества (Буллеты):</span>
-                                                <ul className="list-disc list-inside text-slate-300 space-y-1">
-                                                    {activeSlide.bullets.map((b, i) => <li key={i}>{b}</li>)}
-                                                </ul>
+                                                <span className="text-purple-400 font-bold block mb-1">Выноски характеристик:</span>
+                                                <div className="grid grid-cols-2 gap-2 mt-2">
+                                                    {activeSlide.features?.map((f, i) => (
+                                                        <div key={i} className="p-2 bg-slate-900 rounded-lg border border-slate-800">
+                                                            <span className="text-purple-300 font-bold">{f.icon} {f.title}:</span> {f.desc}
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
