@@ -27,9 +27,6 @@
         }
     </script>
 
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-
     <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -82,7 +79,7 @@
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InplY3d3Z2Vmc2JwaWFkaWZubnVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyMjM2MDMsImV4cCI6MjEwNDc5OTYwM30.PfH7zSMWJkzEhYg4qQ2OyASmQoElh3XzK3YwNc4_9Cg";
         const GEMINI_API_KEY = "AQ.Ab8RN6LOLliooqSKnkHARTnLS1wDlCtsqFU_8LJBDJs1H7oNuQ";
 
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // Словарь локализации
         const I18N = {
@@ -167,11 +164,10 @@
             const [lang, setLang] = useState('ru');
             const [user, setUser] = useState(null);
             const [credits, setCredits] = useState(3);
-            const [activeTab, setActiveTab] = useState('home'); // home, studio, pricing
+            const [activeTab, setActiveTab] = useState('home');
             const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
             const [isSignUp, setIsSignUp] = useState(false);
 
-            // Редактор / Генератор
             const [prompt, setPrompt] = useState('');
             const [selectedImage, setSelectedImage] = useState(null);
             const [isGenerating, setIsGenerating] = useState(false);
@@ -183,7 +179,6 @@
                 badgeColor: "bg-indigo-600"
             });
 
-            // Форма авторизации
             const [authEmail, setAuthEmail] = useState('');
             const [authPassword, setAuthPassword] = useState('');
             const [authError, setAuthError] = useState('');
@@ -192,14 +187,13 @@
             const canvasRef = useRef(null);
             const t = I18N[lang];
 
-            // Отслеживание сессии авторизации
             useEffect(() => {
                 supabase.auth.getSession().then(({ data: { session } }) => {
                     if (session) {
                         setUser(session.user);
                     } else {
                         setUser(null);
-                        setActiveTab('home'); // Возврат на главный экран при отсутствии входа
+                        setActiveTab('home');
                     }
                 });
 
@@ -208,14 +202,13 @@
                         setUser(session.user);
                     } else {
                         setUser(null);
-                        setActiveTab('home'); // Возврат на главный экран при выходе
+                        setActiveTab('home');
                     }
                 });
 
                 return () => subscription.unsubscribe();
             }, []);
 
-            // Анализ сложности пароля
             const handlePasswordChange = (val) => {
                 setAuthPassword(val);
                 let score = 0;
@@ -233,7 +226,6 @@
                 handlePasswordChange(pass);
             };
 
-            // Авторизация Email
             const handleAuth = async (e) => {
                 e.preventDefault();
                 setAuthError('');
@@ -254,7 +246,6 @@
                 }
             };
 
-            // Вход Google
             const handleGoogleAuth = async () => {
                 const { error } = await supabase.auth.signInWithOAuth({
                     provider: 'google',
@@ -263,14 +254,12 @@
                 if (error) alert(error.message);
             };
 
-            // Выход
             const handleSignOut = async () => {
                 await supabase.auth.signOut();
                 setUser(null);
                 setActiveTab('home');
             };
 
-            // Генерация через Gemini API
             const handleGenerate = async () => {
                 if (!user) {
                     setIsAuthModalOpen(true);
@@ -288,7 +277,6 @@
 
                 setIsGenerating(true);
                 try {
-                    // Вызов Gemini API
                     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -322,7 +310,6 @@
                     setActiveTab('studio');
                 } catch (e) {
                     console.error("Ошибка Gemini:", e);
-                    // Фолбэк генерация при сбое API
                     setGeneratedCard({
                         title: prompt.toUpperCase().slice(0, 20),
                         subtitle: "ТОП Продаж 2026",
@@ -337,65 +324,54 @@
                 }
             };
 
-            // Скачивание холста
             const downloadCanvas = () => {
-                const element = canvasRef.current;
-                if (!element) return;
-                
-                // Простая симуляция сохранение картинки
                 alert("Идёт подготовка PNG высокой четкости для Ozon/WB...");
             };
 
             return (
-                <div class="min-h-screen flex flex-col justify-between relative overflow-x-hidden">
-                    
-                    <!-- Glow Orbs -->
-                    <div class="bg-glow-orb w-[500px] h-[500px] bg-indigo-600 -top-20 -left-20"></div>
-                    <div class="bg-glow-orb w-[400px] h-[400px] bg-cyan-600 bottom-0 right-0"></div>
+                <div className="min-h-screen flex flex-col justify-between relative overflow-x-hidden">
+                    <div className="bg-glow-orb w-[500px] h-[500px] bg-indigo-600 -top-20 -left-20"></div>
+                    <div className="bg-glow-orb w-[400px] h-[400px] bg-cyan-600 bottom-0 right-0"></div>
 
-                    <!-- Header -->
-                    <header class="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-lg border-b border-slate-800/80 px-6 py-4">
-                        <div class="max-w-7xl mx-auto flex items-center justify-between">
-                            <div class="flex items-center gap-3 cursor-pointer" onclick={() => setActiveTab('home')}>
-                                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-cyan-400 flex items-center justify-center font-black text-white text-xl shadow-lg shadow-indigo-500/20">
+                    <header className="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-lg border-b border-slate-800/80 px-6 py-4">
+                        <div className="max-w-7xl mx-auto flex items-center justify-between">
+                            <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('home')}>
+                                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-cyan-400 flex items-center justify-center font-black text-white text-xl shadow-lg shadow-indigo-500/20">
                                     C
                                 </div>
-                                <span class="text-xl font-bold bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">
+                                <span className="text-xl font-bold bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">
                                     {t.brand}
                                 </span>
                             </div>
 
-                            <!-- Nav Tabs -->
-                            <nav class="hidden md:flex items-center gap-6 text-sm font-medium">
-                                <button onclick={() => setActiveTab('home')} class={`transition-colors ${activeTab === 'home' ? 'text-indigo-400 font-semibold' : 'text-slate-400 hover:text-white'}`}>{t.nav_home}</button>
+                            <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+                                <button onClick={() => setActiveTab('home')} className={`transition-colors ${activeTab === 'home' ? 'text-indigo-400 font-semibold' : 'text-slate-400 hover:text-white'}`}>{t.nav_home}</button>
                                 {user && (
-                                    <button onclick={() => setActiveTab('studio')} class={`transition-colors ${activeTab === 'studio' ? 'text-indigo-400 font-semibold' : 'text-slate-400 hover:text-white'}`}>{t.nav_studio}</button>
+                                    <button onClick={() => setActiveTab('studio')} className={`transition-colors ${activeTab === 'studio' ? 'text-indigo-400 font-semibold' : 'text-slate-400 hover:text-white'}`}>{t.nav_studio}</button>
                                 )}
-                                <button onclick={() => setActiveTab('pricing')} class={`transition-colors ${activeTab === 'pricing' ? 'text-indigo-400 font-semibold' : 'text-slate-400 hover:text-white'}`}>{t.nav_pricing}</button>
+                                <button onClick={() => setActiveTab('pricing')} className={`transition-colors ${activeTab === 'pricing' ? 'text-indigo-400 font-semibold' : 'text-slate-400 hover:text-white'}`}>{t.nav_pricing}</button>
                             </nav>
 
-                            <!-- Actions -->
-                            <div class="flex items-center gap-4">
-                                <!-- Lang switcher -->
-                                <div class="bg-slate-900 p-1 rounded-xl border border-slate-800 flex text-xs font-semibold">
+                            <div className="flex items-center gap-4">
+                                <div className="bg-slate-900 p-1 rounded-xl border border-slate-800 flex text-xs font-semibold">
                                     {['ru', 'uz', 'en'].map(l => (
-                                        <button key={l} onclick={() => setLang(l)} class={`px-2.5 py-1 rounded-lg uppercase transition-all ${lang === l ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'}`}>
+                                        <button key={l} onClick={() => setLang(l)} className={`px-2.5 py-1 rounded-lg uppercase transition-all ${lang === l ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'}`}>
                                             {l}
                                         </button>
                                     ))}
                                 </div>
 
                                 {user ? (
-                                    <div class="flex items-center gap-3">
-                                        <span class="text-xs bg-indigo-950 text-indigo-300 border border-indigo-800/50 px-3 py-1.5 rounded-xl font-medium">
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-xs bg-indigo-950 text-indigo-300 border border-indigo-800/50 px-3 py-1.5 rounded-xl font-medium">
                                             ⚡ {credits} {t.credits_left}
                                         </span>
-                                        <button onclick={handleSignOut} class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl transition-all">
+                                        <button onClick={handleSignOut} className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl transition-all">
                                             {t.nav_logout}
                                         </button>
                                     </div>
                                 ) : (
-                                    <button onclick={() => { setIsSignUp(false); setIsAuthModalOpen(true); }} class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl font-semibold transition-all shadow-lg shadow-indigo-600/30">
+                                    <button onClick={() => { setIsSignUp(false); setIsAuthModalOpen(true); }} className="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl font-semibold transition-all shadow-lg shadow-indigo-600/30">
                                         {t.nav_login}
                                     </button>
                                 )}
@@ -403,22 +379,20 @@
                         </div>
                     </header>
 
-                    <!-- Main Content -->
-                    <main class="flex-1 relative z-10">
+                    <main className="flex-1 relative z-10">
                         {activeTab === 'home' && (
-                            <section class="pt-24 pb-16 px-6 max-w-5xl mx-auto text-center">
-                                <h1 class="text-4xl md:text-6xl font-extrabold text-white leading-tight mb-6">
+                            <section className="pt-24 pb-16 px-6 max-w-5xl mx-auto text-center">
+                                <h1 className="text-4xl md:text-6xl font-extrabold text-white leading-tight mb-6">
                                     {t.hero_title}
                                 </h1>
-                                <p class="text-lg text-slate-400 mb-10 max-w-2xl mx-auto">
+                                <p className="text-lg text-slate-400 mb-10 max-w-2xl mx-auto">
                                     {t.hero_subtitle}
                                 </p>
 
-                                <!-- Generation Box -->
-                                <div class="max-w-2xl mx-auto bg-slate-900/90 border border-slate-800 p-3 rounded-2xl shadow-2xl flex items-center gap-3">
-                                    <label class="w-12 h-12 rounded-xl bg-slate-800 hover:bg-slate-700 flex items-center justify-center cursor-pointer text-slate-300 hover:text-white transition-all shrink-0">
+                                <div className="max-w-2xl mx-auto bg-slate-900/90 border border-slate-800 p-3 rounded-2xl shadow-2xl flex items-center gap-3">
+                                    <label className="w-12 h-12 rounded-xl bg-slate-800 hover:bg-slate-700 flex items-center justify-center cursor-pointer text-slate-300 hover:text-white transition-all shrink-0">
                                         +
-                                        <input type="file" accept="image/*" class="hidden" onChange={(e) => setSelectedImage(e.target.files[0])} />
+                                        <input type="file" accept="image/*" className="hidden" onChange={(e) => setSelectedImage(e.target.files[0])} />
                                     </label>
 
                                     <input 
@@ -426,77 +400,73 @@
                                         value={prompt}
                                         onChange={(e) => setPrompt(e.target.value)}
                                         placeholder={t.prompt_placeholder}
-                                        class="flex-1 bg-transparent text-sm text-white placeholder-slate-500 focus:outline-none px-2"
+                                        className="flex-1 bg-transparent text-sm text-white placeholder-slate-500 focus:outline-none px-2"
                                     />
 
                                     <button 
-                                        onclick={handleGenerate} 
+                                        onClick={handleGenerate} 
                                         disabled={isGenerating}
-                                        class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3.5 rounded-xl font-semibold text-xs transition-all shadow-lg shadow-indigo-600/30 flex items-center gap-2 whitespace-nowrap disabled:opacity-50"
+                                        className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3.5 rounded-xl font-semibold text-xs transition-all shadow-lg shadow-indigo-600/30 flex items-center gap-2 whitespace-nowrap disabled:opacity-50"
                                     >
                                         <span>{isGenerating ? "Генерируем..." : t.btn_generate}</span>
                                         <span>✨</span>
                                     </button>
                                 </div>
                                 {selectedImage && (
-                                    <p class="text-xs text-emerald-400 mt-2">📷 Загружено фото: {selectedImage.name}</p>
+                                    <p className="text-xs text-emerald-400 mt-2">📷 Загружено фото: {selectedImage.name}</p>
                                 )}
                             </section>
                         )}
 
                         {activeTab === 'studio' && (
-                            <section class="py-12 px-6 max-w-6xl mx-auto">
-                                <div class="flex justify-between items-center mb-8">
-                                    <h2 class="text-2xl font-bold text-white">Студия Слайдов</h2>
-                                    <button onclick={downloadCanvas} class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl text-xs font-semibold shadow-lg">
+                            <section className="py-12 px-6 max-w-6xl mx-auto">
+                                <div className="flex justify-between items-center mb-8">
+                                    <h2 className="text-2xl font-bold text-white">Студия Слайдов</h2>
+                                    <button onClick={downloadCanvas} className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl text-xs font-semibold shadow-lg">
                                         {t.btn_download}
                                     </button>
                                 </div>
 
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    <!-- Canvas Preview -->
-                                    <div ref={canvasRef} class={`aspect-[3/4] rounded-3xl p-8 bg-gradient-to-b ${generatedCard.bgGradient} border border-slate-800 flex flex-col justify-between shadow-2xl relative overflow-hidden`}>
-                                        <div class="space-y-3">
-                                            <span class={`inline-block text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full text-white ${generatedCard.badgeColor}`}>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div ref={canvasRef} className={`aspect-[3/4] rounded-3xl p-8 bg-gradient-to-b ${generatedCard.bgGradient} border border-slate-800 flex flex-col justify-between shadow-2xl relative overflow-hidden`}>
+                                        <div className="space-y-3">
+                                            <span className={`inline-block text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full text-white ${generatedCard.badgeColor}`}>
                                                 {generatedCard.subtitle}
                                             </span>
-                                            <h3 class="text-3xl font-extrabold text-white leading-tight">
+                                            <h3 className="text-3xl font-extrabold text-white leading-tight">
                                                 {generatedCard.title}
                                             </h3>
                                         </div>
 
-                                        <!-- Mock Image / Product Area -->
-                                        <div class="my-auto h-48 bg-slate-800/50 rounded-2xl border border-white/10 flex items-center justify-center text-slate-400 text-xs">
+                                        <div className="my-auto h-48 bg-slate-800/50 rounded-2xl border border-white/10 flex items-center justify-center text-slate-400 text-xs">
                                             {selectedImage ? `[ Изображение: ${selectedImage.name} ]` : "[ 3D-Рендер / Фото товара без фона ]"}
                                         </div>
 
-                                        <!-- Highlights -->
-                                        <div class="space-y-2">
+                                        <div className="space-y-2">
                                             {generatedCard.features.map((feat, idx) => (
-                                                <div key={idx} class="bg-slate-900/80 backdrop-blur-md p-3 rounded-xl border border-white/10 text-xs font-medium text-slate-200 flex items-center gap-2">
-                                                    <span class="text-emerald-400 font-bold">✓</span> {feat}
+                                                <div key={idx} className="bg-slate-900/80 backdrop-blur-md p-3 rounded-xl border border-white/10 text-xs font-medium text-slate-200 flex items-center gap-2">
+                                                    <span className="text-emerald-400 font-bold">✓</span> {feat}
                                                 </div>
                                             ))}
                                         </div>
                                     </div>
 
-                                    <!-- Controls -->
-                                    <div class="bg-slate-900/60 p-6 rounded-3xl border border-slate-800 space-y-6">
-                                        <h4 class="text-lg font-bold text-white">Настройка элементов карточки</h4>
+                                    <div className="bg-slate-900/60 p-6 rounded-3xl border border-slate-800 space-y-6">
+                                        <h4 className="text-lg font-bold text-white">Настройка элементов карточки</h4>
                                         <div>
-                                            <label class="block text-xs text-slate-400 mb-1">Заголовок</label>
-                                            <input type="text" value={generatedCard.title} onChange={(e) => setGeneratedCard({...generatedCard, title: e.target.value})} class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white" />
+                                            <label className="block text-xs text-slate-400 mb-1">Заголовок</label>
+                                            <input type="text" value={generatedCard.title} onChange={(e) => setGeneratedCard({...generatedCard, title: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white" />
                                         </div>
                                         <div>
-                                            <label class="block text-xs text-slate-400 mb-1">Подзаголовок / Плашка</label>
-                                            <input type="text" value={generatedCard.subtitle} onChange={(e) => setGeneratedCard({...generatedCard, subtitle: e.target.value})} class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white" />
+                                            <label className="block text-xs text-slate-400 mb-1">Подзаголовок / Плашка</label>
+                                            <input type="text" value={generatedCard.subtitle} onChange={(e) => setGeneratedCard({...generatedCard, subtitle: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white" />
                                         </div>
                                         <div>
-                                            <label class="block text-xs text-slate-400 mb-2">Цветовой стиль</label>
-                                            <div class="flex gap-3">
-                                                <button onclick={() => setGeneratedCard({...generatedCard, bgGradient: "from-indigo-900 to-slate-900", badgeColor: "bg-indigo-600"})} class="w-8 h-8 rounded-full bg-indigo-600 border-2 border-white/20"></button>
-                                                <button onclick={() => setGeneratedCard({...generatedCard, bgGradient: "from-emerald-950 to-slate-900", badgeColor: "bg-emerald-600"})} class="w-8 h-8 rounded-full bg-emerald-600 border-2 border-white/20"></button>
-                                                <button onclick={() => setGeneratedCard({...generatedCard, bgGradient: "from-rose-950 to-slate-900", badgeColor: "bg-rose-600"})} class="w-8 h-8 rounded-full bg-rose-600 border-2 border-white/20"></button>
+                                            <label className="block text-xs text-slate-400 mb-2">Цветовой стиль</label>
+                                            <div className="flex gap-3">
+                                                <button onClick={() => setGeneratedCard({...generatedCard, bgGradient: "from-indigo-900 to-slate-900", badgeColor: "bg-indigo-600"})} className="w-8 h-8 rounded-full bg-indigo-600 border-2 border-white/20"></button>
+                                                <button onClick={() => setGeneratedCard({...generatedCard, bgGradient: "from-emerald-950 to-slate-900", badgeColor: "bg-emerald-600"})} className="w-8 h-8 rounded-full bg-emerald-600 border-2 border-white/20"></button>
+                                                <button onClick={() => setGeneratedCard({...generatedCard, bgGradient: "from-rose-950 to-slate-900", badgeColor: "bg-rose-600"})} className="w-8 h-8 rounded-full bg-rose-600 border-2 border-white/20"></button>
                                             </div>
                                         </div>
                                     </div>
@@ -505,62 +475,61 @@
                         )}
 
                         {activeTab === 'pricing' && (
-                            <section class="py-16 px-6 max-w-5xl mx-auto">
-                                <h2 class="text-3xl font-extrabold text-center text-white mb-12">{t.nav_pricing}</h2>
-                                <div class="grid md:grid-cols-2 gap-8">
-                                    <div class="bg-slate-900 p-8 rounded-3xl border border-slate-800 space-y-6">
-                                        <h3 class="text-xl font-bold text-white">Старт</h3>
-                                        <div class="text-3xl font-black text-white">Бесплатно</div>
-                                        <p class="text-sm text-slate-400">3 генерации карточек при регистрации.</p>
+                            <section className="py-16 px-6 max-w-5xl mx-auto">
+                                <h2 className="text-3xl font-extrabold text-center text-white mb-12">{t.nav_pricing}</h2>
+                                <div className="grid md:grid-cols-2 gap-8">
+                                    <div className="bg-slate-900 p-8 rounded-3xl border border-slate-800 space-y-6">
+                                        <h3 className="text-xl font-bold text-white">Старт</h3>
+                                        <div className="text-3xl font-black text-white">Бесплатно</div>
+                                        <p className="text-sm text-slate-400">3 генерации карточек при регистрации.</p>
                                     </div>
-                                    <div class="bg-gradient-to-b from-indigo-950 to-slate-900 p-8 rounded-3xl border border-indigo-500/30 space-y-6">
-                                        <h3 class="text-xl font-bold text-white">PRO Продавец</h3>
-                                        <div class="text-3xl font-black text-white">99,000 UZS / мес</div>
-                                        <p class="text-sm text-slate-300">Неограниченная AI-генерация инфографики и 3D-фонов.</p>
+                                    <div className="bg-gradient-to-b from-indigo-950 to-slate-900 p-8 rounded-3xl border border-indigo-500/30 space-y-6">
+                                        <h3 className="text-xl font-bold text-white">PRO Продавец</h3>
+                                        <div className="text-3xl font-black text-white">99,000 UZS / мес</div>
+                                        <p className="text-sm text-slate-300">Неограниченная AI-генерация инфографики и 3D-фонов.</p>
                                     </div>
                                 </div>
                             </section>
                         )}
                     </main>
 
-                    <!-- Auth Modal -->
                     {isAuthModalOpen && (
-                        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
-                            <div class="bg-slate-900 border border-slate-800 p-8 rounded-3xl max-w-md w-full relative shadow-2xl">
-                                <button onclick={() => setIsAuthModalOpen(false)} class="absolute top-4 right-4 text-slate-400 hover:text-white">✕</button>
-                                <h3 class="text-2xl font-bold text-white mb-2">{isSignUp ? "Создать аккаунт" : t.auth_modal_title}</h3>
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+                            <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl max-w-md w-full relative shadow-2xl">
+                                <button onClick={() => setIsAuthModalOpen(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white">✕</button>
+                                <h3 className="text-2xl font-bold text-white mb-2">{isSignUp ? "Создать аккаунт" : t.auth_modal_title}</h3>
                                 
-                                <button onclick={handleGoogleAuth} class="w-full bg-white hover:bg-slate-100 text-slate-900 font-semibold py-3 rounded-xl mb-4 text-sm flex items-center justify-center gap-3">
+                                <button onClick={handleGoogleAuth} className="w-full bg-white hover:bg-slate-100 text-slate-900 font-semibold py-3 rounded-xl mb-4 text-sm flex items-center justify-center gap-3">
                                     <span>{t.auth_google}</span>
                                 </button>
 
-                                <form onSubmit={handleAuth} class="space-y-4">
+                                <form onSubmit={handleAuth} className="space-y-4">
                                     <div>
-                                        <label class="block text-xs font-medium text-slate-400 mb-1">E-mail</label>
-                                        <input type="email" required value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white" />
+                                        <label className="block text-xs font-medium text-slate-400 mb-1">E-mail</label>
+                                        <input type="email" required value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white" />
                                     </div>
                                     <div>
-                                        <div class="flex justify-between items-center mb-1">
-                                            <label class="block text-xs font-medium text-slate-400">Пароль</label>
-                                            <button type="button" onclick={generatePassword} class="text-[11px] text-indigo-400 hover:underline">{t.pwd_gen_btn}</button>
+                                        <div className="flex justify-between items-center mb-1">
+                                            <label className="block text-xs font-medium text-slate-400">Пароль</label>
+                                            <button type="button" onClick={generatePassword} className="text-[11px] text-indigo-400 hover:underline">{t.pwd_gen_btn}</button>
                                         </div>
-                                        <input type="password" required value={authPassword} onChange={(e) => handlePasswordChange(e.target.value)} class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white" />
+                                        <input type="password" required value={authPassword} onChange={(e) => handlePasswordChange(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white" />
                                         
                                         {authPassword && (
-                                            <div class="mt-2">
-                                                <div class="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
-                                                    <div class={`h-full transition-all ${passwordScore <= 25 ? 'w-1/4 bg-rose-500' : passwordScore <= 50 ? 'w-2/4 bg-amber-500' : 'w-full bg-emerald-500'}`}></div>
+                                            <div className="mt-2">
+                                                <div className="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
+                                                    <div className={`h-full transition-all ${passwordScore <= 25 ? 'w-1/4 bg-rose-500' : passwordScore <= 50 ? 'w-2/4 bg-amber-500' : 'w-full bg-emerald-500'}`}></div>
                                                 </div>
                                             </div>
                                         )}
                                     </div>
-                                    {authError && <p class="text-xs text-rose-400 bg-rose-950/40 p-2 rounded-lg">{authError}</p>}
-                                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 rounded-xl text-sm">
+                                    {authError && <p className="text-xs text-rose-400 bg-rose-950/40 p-2 rounded-lg">{authError}</p>}
+                                    <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 rounded-xl text-sm">
                                         {isSignUp ? "Зарегистрироваться" : "Войти"}
                                     </button>
                                 </form>
-                                <div class="mt-4 text-center">
-                                    <button onclick={() => setIsSignUp(!isSignUp)} class="text-xs text-indigo-400 hover:underline">
+                                <div className="mt-4 text-center">
+                                    <button onClick={() => setIsSignUp(!isSignUp)} className="text-xs text-indigo-400 hover:underline">
                                         {isSignUp ? "Уже есть аккаунт? Войти" : "Нет аккаунта? Зарегистрироваться"}
                                     </button>
                                 </div>
@@ -568,8 +537,7 @@
                         </div>
                     )}
 
-                    <!-- Footer -->
-                    <footer class="border-t border-slate-800 py-6 px-6 text-center text-xs text-slate-500">
+                    <footer className="border-t border-slate-800 py-6 px-6 text-center text-xs text-slate-500">
                         CardCraft AI © 2026. All rights reserved.
                     </footer>
                 </div>
