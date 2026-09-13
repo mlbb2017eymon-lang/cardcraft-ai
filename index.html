@@ -7,122 +7,152 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        /* Базовый темный фон */
         body {
             background-color: #030712;
+            color: #f8fafc;
             overflow-x: hidden;
+            min-height: 100vh;
         }
 
+        /* КОНТЕЙНЕР АНИМИРОВАННОГО ФОНА */
         .bg-glow-container {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            z-index: -1;
-            overflow: hidden;
+            z-index: 0;
             pointer-events: none;
+            overflow: hidden;
         }
 
+        /* АНИМИРОВАННЫЕ ЯРКИЕ СФЕРЫ */
         .orb {
             position: absolute;
             border-radius: 50%;
-            filter: blur(100px);
-            opacity: 0.45;
-            animation: floatOrb 18s ease-in-out infinite alternate;
+            filter: blur(80px);
+            opacity: 0.6;
+            animation: floatOrb 12s ease-in-out infinite alternate;
         }
 
         .orb-1 {
             top: -10%;
             left: -10%;
-            width: 50vw;
-            height: 50vw;
-            background: radial-gradient(circle, #4f46e5 0%, rgba(79, 70, 229, 0) 70%);
+            width: 55vw;
+            height: 55vw;
+            background: radial-gradient(circle, #6366f1 0%, rgba(99, 102, 241, 0) 70%);
+            animation-duration: 14s;
         }
 
         .orb-2 {
-            bottom: -20%;
+            bottom: -15%;
             right: -10%;
             width: 60vw;
             height: 60vw;
-            background: radial-gradient(circle, #7c3aed 0%, rgba(124, 58, 237, 0) 70%);
-            animation-delay: -5s;
+            background: radial-gradient(circle, #8b5cf6 0%, rgba(139, 92, 246, 0) 70%);
+            animation-delay: -4s;
+            animation-duration: 18s;
         }
 
         .orb-3 {
-            top: 30%;
-            left: 40%;
+            top: 35%;
+            left: 30%;
+            width: 45vw;
+            height: 45vw;
+            background: radial-gradient(circle, #3b82f6 0%, rgba(59, 130, 246, 0) 70%);
+            animation-delay: -7s;
+            animation-duration: 16s;
+        }
+
+        .orb-4 {
+            bottom: 20%;
+            left: -5%;
             width: 40vw;
             height: 40vw;
-            background: radial-gradient(circle, #2563eb 0%, rgba(37, 99, 235, 0) 70%);
+            background: radial-gradient(circle, #ec4899 0%, rgba(236, 72, 153, 0) 70%);
             animation-delay: -10s;
+            animation-duration: 20s;
         }
 
+        /* ТРАЕКТОРИЯ ДВИЖЕНИЯ И ВРАЩЕНИЯ СФЕР */
         @keyframes floatOrb {
-            0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(50px, 80px) scale(1.1); }
-            100% { transform: translate(-40px, -60px) scale(0.95); }
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+            50% {
+                transform: translate(80px, 60px) scale(1.15);
+            }
+            100% {
+                transform: translate(-60px, -80px) scale(0.9);
+            }
         }
 
-        .glow-card {
-            box-shadow: 0 0 30px rgba(99, 102, 241, 0.15);
-            backdrop-filter: blur(16px);
+        /* Стеклянные карточки с размытием */
+        .glass-card {
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
     </style>
 </head>
-<body class="text-slate-100 min-h-screen flex flex-col font-sans antialiased">
+<body class="flex flex-col relative font-sans antialiased">
 
-    <!-- Динамический анимированный фон -->
+    <!-- 🔥 ЯРКИЙ АНИМИРОВАННЫЙ ФОН 🔥 -->
     <div class="bg-glow-container">
         <div class="orb orb-1"></div>
         <div class="orb orb-2"></div>
         <div class="orb orb-3"></div>
+        <div class="orb orb-4"></div>
     </div>
 
     <!-- Верхняя шапка -->
-    <header class="border-b border-slate-800/80 bg-slate-950/70 backdrop-blur-md px-6 py-4 flex justify-between items-center fixed top-0 w-full z-40">
+    <header class="border-b border-white/10 bg-slate-950/70 backdrop-blur-md px-6 py-4 flex justify-between items-center fixed top-0 w-full z-40">
         <div class="flex items-center gap-3">
-            <h1 class="text-xl font-extrabold bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">
+            <h1 class="text-xl font-extrabold bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">
                 CardCraft AI
             </h1>
-            <span class="text-xs px-2.5 py-0.5 rounded-full bg-indigo-950/80 text-indigo-300 border border-indigo-800/60">
+            <span class="text-xs px-2.5 py-0.5 rounded-full bg-indigo-950/80 text-indigo-300 border border-indigo-700/50">
                 E-commerce Studio
             </span>
         </div>
         
         <div id="header-auth-action">
-            <button onclick="openAuthModal()" class="px-5 py-2 text-sm font-medium bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-all glow-card">
+            <button onclick="openAuthModal()" class="px-5 py-2 text-sm font-medium bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-all shadow-lg shadow-indigo-600/30">
                 Попробовать бесплатно / Вход
             </button>
         </div>
     </header>
 
     <!-- Главный контейнер -->
-    <div class="flex-1 flex pt-20">
+    <div class="flex-1 flex pt-20 relative z-10">
 
         <!-- Боковое меню -->
-        <aside id="sidebar" class="w-64 border-r border-slate-800/80 bg-slate-950/70 backdrop-blur-md p-4 flex flex-col justify-between hidden transition-all">
+        <aside id="sidebar" class="w-64 border-r border-white/10 bg-slate-950/70 backdrop-blur-md p-4 flex flex-col justify-between hidden transition-all">
             <div class="space-y-6">
-                <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800/60">
+                <div class="p-3 bg-slate-900/80 rounded-xl border border-white/10">
                     <div id="user-email-display" class="text-xs text-slate-400 truncate mb-1">user@example.com</div>
-                    <div id="user-credits-badge" class="inline-block bg-indigo-950 text-indigo-300 border border-indigo-800/60 px-2.5 py-0.5 rounded-full text-xs font-semibold">
+                    <div id="user-credits-badge" class="inline-block bg-indigo-950 text-indigo-300 border border-indigo-700/50 px-2.5 py-0.5 rounded-full text-xs font-semibold">
                         ⚡ 3 кредита
                     </div>
                 </div>
 
                 <nav class="space-y-1">
-                    <button onclick="switchTab('workspace')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800/60 hover:text-white transition-all text-sm font-medium">
+                    <button onclick="switchTab('workspace')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-all text-sm font-medium">
                         <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
                         Главная (Создать)
                     </button>
-                    <button onclick="switchTab('gallery')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800/60 hover:text-white transition-all text-sm font-medium">
+                    <button onclick="switchTab('gallery')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-all text-sm font-medium">
                         <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                         Мои работы
                     </button>
-                    <button onclick="switchTab('referral')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800/60 hover:text-white transition-all text-sm font-medium">
+                    <button onclick="switchTab('referral')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-all text-sm font-medium">
                         <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                         Пригласи друга (+50⚡)
                     </button>
-                    <button onclick="switchTab('pricing')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800/60 hover:text-white transition-all text-sm font-medium">
+                    <button onclick="switchTab('pricing')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-all text-sm font-medium">
                         <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         Подписка и Тарифы
                     </button>
@@ -139,27 +169,27 @@
         <main class="flex-1 p-6 max-w-5xl mx-auto flex flex-col justify-center items-center">
             
             <!-- Генератор -->
-            <div id="generator-widget" class="w-full max-w-2xl bg-slate-900/60 border border-slate-800 p-8 rounded-2xl shadow-2xl glow-card">
+            <div id="generator-widget" class="w-full max-w-2xl glass-card p-8 rounded-2xl shadow-2xl">
                 <h2 class="text-2xl font-bold text-white mb-2 text-center">Создайте продающую карточку товара за секунды</h2>
-                <p class="text-sm text-slate-400 mb-6 text-center">Загрузите фото товара и описания — AI сделает всё остальное</p>
+                <p class="text-sm text-slate-300 mb-6 text-center">Загрузите фото товара и описание — AI сделает всё остальное</p>
 
                 <div class="space-y-4">
-                    <div class="border-2 border-dashed border-slate-700 hover:border-indigo-500/50 rounded-xl p-4 text-center cursor-pointer transition-all bg-slate-950/50">
+                    <div class="border-2 border-dashed border-white/20 hover:border-indigo-400/80 rounded-xl p-6 text-center cursor-pointer transition-all bg-slate-950/40">
                         <input type="file" id="image-upload" class="hidden" accept="image/*" onchange="previewImage(event)">
                         <label for="image-upload" class="cursor-pointer flex flex-col items-center">
                             <div id="upload-placeholder" class="flex flex-col items-center">
-                                <svg class="w-8 h-8 text-indigo-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                                <span class="text-xs text-slate-300 font-medium">Перетащите фото товара или <span class="text-indigo-400 underline">выберите файл</span></span>
+                                <svg class="w-10 h-10 text-indigo-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                <span class="text-xs text-slate-200 font-medium">Перетащите фото товара или <span class="text-indigo-400 underline">выберите файл</span></span>
                             </div>
-                            <img id="image-preview" class="hidden max-h-32 rounded-lg object-contain border border-slate-700">
+                            <img id="image-preview" class="hidden max-h-36 rounded-lg object-contain border border-white/20">
                         </label>
                     </div>
 
                     <div>
-                        <textarea id="prompt-input" rows="3" placeholder="Введите название товара и особенности (например: Кофемашина рожковая, стиль минимализм, неоновый фон, плашки с выгодами)" class="w-full px-4 py-3 rounded-xl bg-slate-950/80 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 text-sm resize-none"></textarea>
+                        <textarea id="prompt-input" rows="3" placeholder="Введите название товара и особенности (например: Кофемашина рожковая, стиль минимализм, неоновый фон, плашки с выгодами)" class="w-full px-4 py-3 rounded-xl bg-slate-950/60 border border-white/10 text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500 text-sm resize-none"></textarea>
                     </div>
 
-                    <button onclick="handleStartGenerate()" class="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 font-semibold text-white rounded-xl transition-all glow-card flex justify-center items-center gap-2">
+                    <button onclick="handleStartGenerate()" class="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 font-semibold text-white rounded-xl transition-all shadow-lg shadow-indigo-600/30 flex justify-center items-center gap-2">
                         <span>✨ Сгенерировать карточку</span>
                     </button>
                 </div>
@@ -167,17 +197,17 @@
 
             <!-- Раздел Реферальной программы -->
             <div id="referral-view" class="w-full max-w-2xl hidden">
-                <div class="bg-slate-900/60 border border-slate-800 p-8 rounded-2xl shadow-2xl glow-card">
+                <div class="glass-card p-8 rounded-2xl shadow-2xl">
                     <div class="text-center mb-6">
                         <span class="text-4xl">🎁</span>
                         <h2 class="text-2xl font-bold text-white mt-2 mb-1">Приглашайте друзей — получайте генерации!</h2>
-                        <p class="text-sm text-slate-400">Получите <span class="text-indigo-400 font-bold">+50 бесплатных кредитов</span> за каждого друга, который зарегистрируется по вашей ссылке и оформит подписку.</p>
+                        <p class="text-sm text-slate-300">Получите <span class="text-indigo-400 font-bold">+50 бесплатных кредитов</span> за каждого друга, который зарегистрируется по вашей ссылке и оформит подписку.</p>
                     </div>
 
-                    <div class="bg-slate-950/80 p-4 rounded-xl border border-slate-800 space-y-3">
+                    <div class="bg-slate-950/60 p-4 rounded-xl border border-white/10 space-y-3">
                         <label class="block text-xs text-slate-400">Ваша реферальная ссылка:</label>
                         <div class="flex gap-2">
-                            <input type="text" id="referral-link-input" readonly class="flex-1 px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-xs text-indigo-300 focus:outline-none">
+                            <input type="text" id="referral-link-input" readonly class="flex-1 px-3 py-2 rounded-lg bg-slate-900 border border-white/10 text-xs text-indigo-300 focus:outline-none">
                             <button onclick="copyReferralLink()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold rounded-lg transition-colors">
                                 Скопировать
                             </button>
@@ -190,7 +220,7 @@
             <!-- Галерея -->
             <div id="gallery-view" class="w-full hidden">
                 <h2 class="text-xl font-bold mb-4">Мои сгенерированные работы</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-slate-500 text-sm">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-slate-400 text-sm">
                     У вас пока нет сохраненных карточек.
                 </div>
             </div>
@@ -199,7 +229,7 @@
             <div id="pricing-view" class="w-full hidden">
                 <h2 class="text-xl font-bold mb-4">Тарифы и подписка</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-slate-900/60 border border-slate-800 p-6 rounded-xl">
+                    <div class="glass-card p-6 rounded-xl">
                         <h3 class="font-bold text-lg mb-2">Старт</h3>
                         <p class="text-2xl font-bold mb-4">390 ₽ <span class="text-xs text-slate-400">/ 50 генераций</span></p>
                         <button class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-medium">Пополнить</button>
@@ -212,10 +242,10 @@
 
     <!-- Модальное окно авторизации -->
     <div id="auth-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex justify-center items-center hidden z-50">
-        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-md w-full relative glow-card">
+        <div class="glass-card p-6 rounded-2xl max-w-md w-full relative">
             <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">✕</button>
             
-            <div class="flex border-b border-slate-800 mb-6">
+            <div class="flex border-b border-white/10 mb-6">
                 <button id="tab-login-btn" onclick="toggleAuthTab('login')" class="flex-1 pb-3 text-sm font-semibold text-indigo-400 border-b-2 border-indigo-500">Вход</button>
                 <button id="tab-signup-btn" onclick="toggleAuthTab('signup')" class="flex-1 pb-3 text-sm font-semibold text-slate-400 hover:text-slate-200">Регистрация</button>
             </div>
@@ -223,11 +253,11 @@
             <form id="auth-form" onsubmit="handleAuthSubmit(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs text-slate-400 mb-1">Ваш Email</label>
-                    <input type="email" id="modal-email-input" required placeholder="name@example.com" class="w-full px-4 py-2.5 rounded-lg bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 text-sm">
+                    <input type="email" id="modal-email-input" required placeholder="name@example.com" class="w-full px-4 py-2.5 rounded-lg bg-slate-950/80 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 text-sm">
                 </div>
                 <div>
                     <label class="block text-xs text-slate-400 mb-1">Пароль</label>
-                    <input type="password" id="modal-password-input" required minlength="6" placeholder="••••••••" class="w-full px-4 py-2.5 rounded-lg bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 text-sm">
+                    <input type="password" id="modal-password-input" required minlength="6" placeholder="••••••••" class="w-full px-4 py-2.5 rounded-lg bg-slate-950/80 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 text-sm">
                 </div>
 
                 <button type="submit" id="modal-submit-btn" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 font-medium rounded-lg transition-colors text-sm">
@@ -248,7 +278,6 @@
         let authMode = 'login';
 
         function initApp() {
-            // Запоминаем реферальный код из URL если есть (?ref=xxx)
             const urlParams = new URLSearchParams(window.location.search);
             const refId = urlParams.get('ref');
             if (refId) {
@@ -286,7 +315,7 @@
             } else {
                 sidebar.classList.add('hidden');
                 authAction.innerHTML = `
-                    <button onclick="openAuthModal()" class="px-5 py-2 text-sm font-medium bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-all glow-card">
+                    <button onclick="openAuthModal()" class="px-5 py-2 text-sm font-medium bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-all shadow-lg shadow-indigo-600/30">
                         Попробовать бесплатно / Вход
                     </button>
                 `;
