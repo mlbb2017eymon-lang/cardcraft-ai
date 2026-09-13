@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CardCraft AI — E-commerce Studio & Infographics Generator</title>
+    <title>CardCraft AI — ИИ-генератор инфографики для маркетплейсов</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -15,7 +15,6 @@
                     colors: {
                         brand: {
                             50: '#eef2ff',
-                            100: '#e0e7ff',
                             500: '#6366f1',
                             600: '#4f46e5',
                             700: '#4338ca',
@@ -27,28 +26,27 @@
         }
     </script>
 
-    <!-- React & ReactDOM -->
+    <!-- React, ReactDOM, Babel, Supabase, html2canvas -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-    <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #090d16;
-            color: #f8fafc;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #030712;
+            color: #f9fafb;
         }
 
         .bg-glow-orb {
             position: absolute;
             border-radius: 50%;
-            filter: blur(100px);
-            opacity: 0.35;
+            filter: blur(120px);
+            opacity: 0.25;
             pointer-events: none;
         }
 
@@ -62,9 +60,6 @@
             background: rgba(99, 102, 241, 0.5);
             border-radius: 9999px;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: rgba(99, 102, 241, 0.8);
-        }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen antialiased selection:bg-indigo-500 selection:text-white custom-scrollbar">
@@ -74,62 +69,52 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // Конфигурация Supabase и Gemini API
         const SUPABASE_URL = "https://zecwwgefsbpiadifnnuc.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InplY3d3Z2Vmc2JwaWFkaWZubnVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyMjM2MDMsImV4cCI6MjEwNDc5OTYwM30.PfH7zSMWJkzEhYg4qQ2OyASmQoElh3XzK3YwNc4_9Cg";
         const GEMINI_API_KEY = "AQ.Ab8RN6LOLliooqSKnkHARTnLS1wDlCtsqFU_8LJBDJs1H7oNuQ";
 
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Словарь локализации
         const I18N = {
             ru: {
                 brand: "CardCraft AI",
                 nav_home: "Главная",
                 nav_features: "Возможности",
+                nav_showcase: "Галерея",
                 nav_pricing: "Тарифы",
                 nav_studio: "Студия Canvas",
                 nav_login: "Войти",
-                nav_signup: "Регистрация",
                 nav_logout: "Выйти",
-                hero_title: "CardCraft AI — ИИ-дизайн карточек для маркетплейсов",
-                hero_subtitle: "Генерируйте сочную инфографику, удаляйте фон и выделяйте плюсы товаров за секунды для Wildberries, Ozon и Uzum.",
-                btn_generate: "Сгенерировать карточку",
-                prompt_placeholder: "Опишите товар (например: Соковыжималка мощная, черная, кухонная премиум)...",
-                credits_left: "Осталось кредитов:",
+                hero_title: "ИИ-Инфографика карточек для Wildberries, Ozon и Uzum",
+                hero_subtitle: "Загрузите фото товара — ИИ сгенерирует продающий дизайн, сочные тексты и подгонит размеры за 10 секунд.",
+                btn_generate: "Сгенерировать в Студии",
+                prompt_placeholder: "Введите товар (например: Кофемашина премиум с капучинатором, 15 бар)...",
+                credits_left: "Кредитов:",
                 tab_home: "Обзор",
-                tab_editor: "Редактор холста",
+                tab_editor: "Студия Редактора",
                 tab_pricing: "Тарифы",
-                btn_download: "Скачать PNG",
-                pwd_gen_btn: "✨ Сгенерировать надежный пароль",
-                pwd_weak: "Слабый пароль",
-                pwd_medium: "Средний пароль",
-                pwd_strong: "Надежный пароль ✨",
-                auth_modal_title: "Авторизация в CardCraft AI",
+                btn_download: "Скачать PNG 4K",
+                auth_modal_title: "Вход в CardCraft AI",
                 auth_google: "Войти через Google"
             },
             uz: {
                 brand: "CardCraft AI",
                 nav_home: "Bosh sahifa",
                 nav_features: "Imkoniyatlar",
+                nav_showcase: "Galereya",
                 nav_pricing: "Tariflar",
-                nav_studio: "Canvas Studiya",
+                nav_studio: "Studiya",
                 nav_login: "Kirish",
-                nav_signup: "Ro'yxatdan o'tish",
                 nav_logout: "Chiqish",
-                hero_title: "CardCraft AI — marketpleyslar uchun sun'iy intellekt",
-                hero_subtitle: "Wildberries, Ozon va Uzum uchun mahsulot kartochkalarini sekundlarda yarating va фонни olib tashlang.",
-                btn_generate: "Kartochka yaratish",
-                prompt_placeholder: "Mahsulotni tasvirlang (masalan: Oshxona uchun sharbat chiqargich)...",
-                credits_left: "Qolgan kreditlar:",
+                hero_title: "Wildberries, Ozon va Uzum uchun AI-Infografika",
+                hero_subtitle: "Mahsulot rasmini yuklang — AI 10 sekundda sotadigan dizayn va matnlarni tayyorlaydi.",
+                btn_generate: "Studiyada yaratish",
+                prompt_placeholder: "Mahsulotni kiriting (masalan: Kofe mashinasi 15 bar)...",
+                credits_left: "Kreditlar:",
                 tab_home: "Sharh",
-                tab_editor: "Muharrir",
+                tab_editor: "Muharrir Studiyasi",
                 tab_pricing: "Tariflar",
                 btn_download: "PNG yuklab olish",
-                pwd_gen_btn: "✨ Kuchli parol yaratish",
-                pwd_weak: "Kuchsiz parol",
-                pwd_medium: "O'rtacha parol",
-                pwd_strong: "Kuchli parol ✨",
                 auth_modal_title: "CardCraft AI ga kirish",
                 auth_google: "Google orqali kirish"
             },
@@ -137,24 +122,20 @@
                 brand: "CardCraft AI",
                 nav_home: "Home",
                 nav_features: "Features",
+                nav_showcase: "Showcase",
                 nav_pricing: "Pricing",
-                nav_studio: "Canvas Studio",
+                nav_studio: "Studio",
                 nav_login: "Sign In",
-                nav_signup: "Sign Up",
                 nav_logout: "Sign Out",
-                hero_title: "CardCraft AI — AI Studio for E-commerce Sellers",
-                hero_subtitle: "Generate selling product cards, remove backgrounds, and create infographics in seconds.",
+                hero_title: "AI Card Generator for E-commerce Sellers",
+                hero_subtitle: "Upload your product photo — AI creates high-converting infographics and texts in 10 seconds.",
                 btn_generate: "Generate Card",
-                prompt_placeholder: "Describe product details (e.g., Premium black blender with titanium blades)...",
-                credits_left: "Credits left:",
+                prompt_placeholder: "Enter product (e.g. Espresso Coffee Maker 15 Bar)...",
+                credits_left: "Credits:",
                 tab_home: "Overview",
-                tab_editor: "Canvas Editor",
+                tab_editor: "Canvas Studio",
                 tab_pricing: "Pricing",
                 btn_download: "Download PNG",
-                pwd_gen_btn: "✨ Generate Strong Password",
-                pwd_weak: "Weak password",
-                pwd_medium: "Medium password",
-                pwd_strong: "Strong password ✨",
                 auth_modal_title: "Sign in to CardCraft AI",
                 auth_google: "Sign in with Google"
             }
@@ -163,67 +144,59 @@
         function App() {
             const [lang, setLang] = useState('ru');
             const [user, setUser] = useState(null);
-            const [credits, setCredits] = useState(3);
+            const [credits, setCredits] = useState(5);
             const [activeTab, setActiveTab] = useState('home');
             const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
             const [isSignUp, setIsSignUp] = useState(false);
 
             const [prompt, setPrompt] = useState('');
             const [selectedImage, setSelectedImage] = useState(null);
+            const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
             const [isGenerating, setIsGenerating] = useState(false);
+            const [isDownloading, setIsDownloading] = useState(false);
+
+            // Состояние карточки
+            const [marketplaceFormat, setMarketplaceFormat] = useState('wb'); // wb (3:4) или ozon (1:1)
             const [generatedCard, setGeneratedCard] = useState({
-                title: "ПРЕМИУМ ТОВАР",
-                subtitle: "Максимальное качество и надежность",
-                features: ["Мощность 1500 Вт", "Гарантия 2 года", "Эко-материалы"],
-                bgGradient: "from-indigo-900 to-slate-900",
-                badgeColor: "bg-indigo-600"
+                title: "ПРЕМИУМ КОФЕМАШИНА",
+                subtitle: "ТОП ВЫБОР 2026 ГОДА",
+                features: [
+                    "Давление помпы 15 бар",
+                    "Автоматический капучинатор",
+                    "Сенсорный дисплей HD"
+                ],
+                stylePreset: "cyberpunk",
+                bgGradient: "from-slate-900 via-indigo-950 to-slate-950",
+                badgeColor: "bg-gradient-to-r from-indigo-500 to-purple-600",
+                textColor: "text-white"
             });
 
             const [authEmail, setAuthEmail] = useState('');
             const [authPassword, setAuthPassword] = useState('');
             const [authError, setAuthError] = useState('');
-            const [passwordScore, setPasswordScore] = useState(0);
 
-            const canvasRef = useRef(null);
+            const cardRef = useRef(null);
             const t = I18N[lang];
 
             useEffect(() => {
                 supabase.auth.getSession().then(({ data: { session } }) => {
-                    if (session) {
-                        setUser(session.user);
-                    } else {
-                        setUser(null);
-                        setActiveTab('home');
-                    }
+                    if (session) setUser(session.user);
                 });
 
                 const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-                    if (session) {
-                        setUser(session.user);
-                    } else {
-                        setUser(null);
-                        setActiveTab('home');
-                    }
+                    if (session) setUser(session.user);
+                    else setUser(null);
                 });
 
                 return () => subscription.unsubscribe();
             }, []);
 
-            const handlePasswordChange = (val) => {
-                setAuthPassword(val);
-                let score = 0;
-                if (val.length >= 8) score += 25;
-                if (val.length >= 12) score += 25;
-                if (/[0-9]/.test(val)) score += 25;
-                if (/[^a-zA-Z0-9]/.test(val)) score += 25;
-                setPasswordScore(score);
-            };
-
-            const generatePassword = () => {
-                const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()";
-                let pass = "";
-                for (let i = 0; i < 16; i++) pass += chars.charAt(Math.floor(Math.random() * chars.length));
-                handlePasswordChange(pass);
+            const handleImageChange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    setSelectedImage(file);
+                    setImagePreviewUrl(URL.createObjectURL(file));
+                }
             };
 
             const handleAuth = async (e) => {
@@ -240,7 +213,6 @@
                         setUser(data.user);
                     }
                     setIsAuthModalOpen(false);
-                    setActiveTab('studio');
                 } catch (err) {
                     setAuthError(err.message);
                 }
@@ -261,17 +233,8 @@
             };
 
             const handleGenerate = async () => {
-                if (!user) {
-                    setIsAuthModalOpen(true);
-                    return;
-                }
-                if (credits <= 0) {
-                    alert("У вас закончились бесплатные генерации! Пополните баланс на вкладке Тарифы.");
-                    setActiveTab('pricing');
-                    return;
-                }
                 if (!prompt.trim()) {
-                    alert("Пожалуйста, введите описание товара!");
+                    alert("Пожалуйста, введите название или описание товара!");
                     return;
                 }
 
@@ -283,95 +246,149 @@
                         body: JSON.stringify({
                             contents: [{
                                 parts: [{
-                                    text: `Ты опытный маркетолог маркетплейсов (Ozon, Wildberries). Сгенерируй структуру карточки товара для описания: "${prompt}". Ответ дай strictly JSON в формате: {"title": "Главный заголовок", "subtitle": "Короткий подзаголовок", "features": ["Плюс 1", "Плюс 2", "Плюс 3"]}`
+                                    text: `Ты лучший маркетплейс-маркетолог WB и Ozon. Проанализируй товар: "${prompt}". 
+                                    Верни строго JSON со следующей структурой без выдуманных символов:
+                                    {
+                                      "title": "Очень крупный заголовок (2-3 слова)",
+                                      "subtitle": "Броская плашка (например: ХИТ ПРОДАЖ / 2026)",
+                                      "features": ["Главная характеристика с цифрой", "Вторая фишка", "Третья фишка"]
+                                    }`
                                 }]
                             }]
                         })
                     });
 
                     const data = await response.json();
-                    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                    
-                    if (text) {
-                        const jsonMatch = text.match(/\{[\s\S]*\}/);
+                    const textResult = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                    if (textResult) {
+                        const jsonMatch = textResult.match(/\{[\s\S]*\}/);
                         if (jsonMatch) {
                             const parsed = JSON.parse(jsonMatch[0]);
-                            setGeneratedCard({
-                                title: parsed.title || "ПРЕМИУМ ТОВАР",
-                                subtitle: parsed.subtitle || "Высокое качество",
-                                features: parsed.features || ["Отличный выбор", "Быстрая доставка", "Гарантия"],
-                                bgGradient: "from-slate-900 via-indigo-950 to-slate-900",
-                                badgeColor: "bg-indigo-600"
-                            });
+                            setGeneratedCard(prev => ({
+                                ...prev,
+                                title: parsed.title || prompt.toUpperCase(),
+                                subtitle: parsed.subtitle || "ПРЕМИУМ КАЧЕСТВО",
+                                features: parsed.features || ["Высокая прочность", "Гарантия 1 год", "Быстрая доставка"]
+                            }));
                         }
                     }
-
-                    setCredits(prev => prev - 1);
+                    setCredits(prev => Math.max(0, prev - 1));
                     setActiveTab('studio');
-                } catch (e) {
-                    console.error("Ошибка Gemini:", e);
-                    setGeneratedCard({
-                        title: prompt.toUpperCase().slice(0, 20),
-                        subtitle: "ТОП Продаж 2026",
-                        features: ["Высокая прочность", "Гарантия 12 месяцев", "Быстрая отправка"],
-                        bgGradient: "from-indigo-900 to-slate-900",
-                        badgeColor: "bg-indigo-600"
-                    });
-                    setCredits(prev => prev - 1);
+                } catch (err) {
+                    console.error("Gemini Error:", err);
+                    setGeneratedCard(prev => ({
+                        ...prev,
+                        title: prompt.toUpperCase().slice(0, 25),
+                        subtitle: "ХИТ ПРОДАЖ 2026",
+                        features: ["Официальная гарантия", "Быстрая доставка", "Премиум материалы"]
+                    }));
                     setActiveTab('studio');
                 } finally {
                     setIsGenerating(false);
                 }
             };
 
-            const downloadCanvas = () => {
-                alert("Идёт подготовка PNG высокой четкости для Ozon/WB...");
+            // Скачивание карточки через html2canvas
+            const downloadPNG = () => {
+                if (!cardRef.current) return;
+                setIsDownloading(true);
+
+                window.html2canvas(cardRef.current, {
+                    scale: 3, // Высокое качество 4K
+                    useCORS: true,
+                    backgroundColor: null
+                }).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = `cardcraft-${Date.now()}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                    setIsDownloading(false);
+                }).catch(err => {
+                    console.error(err);
+                    alert("Ошибка при сохранении PNG");
+                    setIsDownloading(false);
+                });
+            };
+
+            const changeStylePreset = (preset) => {
+                if (preset === 'cyberpunk') {
+                    setGeneratedCard(prev => ({
+                        ...prev,
+                        stylePreset: 'cyberpunk',
+                        bgGradient: "from-slate-950 via-indigo-950 to-slate-900",
+                        badgeColor: "bg-gradient-to-r from-indigo-500 to-purple-600",
+                        textColor: "text-white"
+                    }));
+                } else if (preset === 'gold') {
+                    setGeneratedCard(prev => ({
+                        ...prev,
+                        stylePreset: 'gold',
+                        bgGradient: "from-amber-950 via-slate-950 to-stone-950",
+                        badgeColor: "bg-gradient-to-r from-amber-500 to-yellow-600",
+                        textColor: "text-amber-100"
+                    }));
+                } else if (preset === 'emerald') {
+                    setGeneratedCard(prev => ({
+                        ...prev,
+                        stylePreset: 'emerald',
+                        bgGradient: "from-emerald-950 via-slate-950 to-teal-950",
+                        badgeColor: "bg-gradient-to-r from-emerald-500 to-teal-600",
+                        textColor: "text-emerald-50"
+                    }));
+                } else if (preset === 'clean') {
+                    setGeneratedCard(prev => ({
+                        ...prev,
+                        stylePreset: 'clean',
+                        bgGradient: "from-slate-900 via-slate-950 to-slate-900",
+                        badgeColor: "bg-gradient-to-r from-cyan-500 to-blue-600",
+                        textColor: "text-white"
+                    }));
+                }
             };
 
             return (
                 <div className="min-h-screen flex flex-col justify-between relative overflow-x-hidden">
-                    <div className="bg-glow-orb w-[500px] h-[500px] bg-indigo-600 -top-20 -left-20"></div>
-                    <div className="bg-glow-orb w-[400px] h-[400px] bg-cyan-600 bottom-0 right-0"></div>
+                    <div className="bg-glow-orb w-[600px] h-[600px] bg-indigo-600 -top-40 -left-40"></div>
+                    <div className="bg-glow-orb w-[500px] h-[500px] bg-cyan-600 bottom-0 right-0"></div>
 
-                    <header className="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-lg border-b border-slate-800/80 px-6 py-4">
+                    {/* Шапка сайта */}
+                    <header className="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/80 px-6 py-4">
                         <div className="max-w-7xl mx-auto flex items-center justify-between">
                             <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('home')}>
-                                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-cyan-400 flex items-center justify-center font-black text-white text-xl shadow-lg shadow-indigo-500/20">
+                                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-cyan-400 flex items-center justify-center font-black text-white text-xl shadow-lg shadow-indigo-500/20">
                                     C
                                 </div>
-                                <span className="text-xl font-bold bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">
+                                <span className="text-xl font-extrabold bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">
                                     {t.brand}
                                 </span>
                             </div>
 
-                            <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-                                <button onClick={() => setActiveTab('home')} className={`transition-colors ${activeTab === 'home' ? 'text-indigo-400 font-semibold' : 'text-slate-400 hover:text-white'}`}>{t.nav_home}</button>
-                                {user && (
-                                    <button onClick={() => setActiveTab('studio')} className={`transition-colors ${activeTab === 'studio' ? 'text-indigo-400 font-semibold' : 'text-slate-400 hover:text-white'}`}>{t.nav_studio}</button>
-                                )}
-                                <button onClick={() => setActiveTab('pricing')} className={`transition-colors ${activeTab === 'pricing' ? 'text-indigo-400 font-semibold' : 'text-slate-400 hover:text-white'}`}>{t.nav_pricing}</button>
+                            <nav className="hidden md:flex items-center gap-8 text-sm font-semibold">
+                                <button onClick={() => setActiveTab('home')} className={`transition-all ${activeTab === 'home' ? 'text-indigo-400 font-bold' : 'text-slate-400 hover:text-white'}`}>{t.nav_home}</button>
+                                <button onClick={() => setActiveTab('studio')} className={`transition-all ${activeTab === 'studio' ? 'text-indigo-400 font-bold' : 'text-slate-400 hover:text-white'}`}>{t.nav_studio}</button>
+                                <button onClick={() => setActiveTab('pricing')} className={`transition-all ${activeTab === 'pricing' ? 'text-indigo-400 font-bold' : 'text-slate-400 hover:text-white'}`}>{t.nav_pricing}</button>
                             </nav>
 
                             <div className="flex items-center gap-4">
-                                <div className="bg-slate-900 p-1 rounded-xl border border-slate-800 flex text-xs font-semibold">
+                                <div className="bg-slate-900/90 p-1 rounded-xl border border-slate-800 flex text-xs font-semibold">
                                     {['ru', 'uz', 'en'].map(l => (
-                                        <button key={l} onClick={() => setLang(l)} className={`px-2.5 py-1 rounded-lg uppercase transition-all ${lang === l ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'}`}>
+                                        <button key={l} onClick={() => setLang(l)} className={`px-2.5 py-1 rounded-lg uppercase transition-all ${lang === l ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}>
                                             {l}
                                         </button>
                                     ))}
                                 </div>
 
+                                <div className="hidden sm:flex items-center gap-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl text-xs font-semibold text-indigo-300">
+                                    ⚡ {credits} {t.credits_left}
+                                </div>
+
                                 {user ? (
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-xs bg-indigo-950 text-indigo-300 border border-indigo-800/50 px-3 py-1.5 rounded-xl font-medium">
-                                            ⚡ {credits} {t.credits_left}
-                                        </span>
-                                        <button onClick={handleSignOut} className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl transition-all">
-                                            {t.nav_logout}
-                                        </button>
-                                    </div>
+                                    <button onClick={handleSignOut} className="text-xs bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 px-4 py-2 rounded-xl transition-all">
+                                        {t.nav_logout}
+                                    </button>
                                 ) : (
-                                    <button onClick={() => { setIsSignUp(false); setIsAuthModalOpen(true); }} className="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl font-semibold transition-all shadow-lg shadow-indigo-600/30">
+                                    <button onClick={() => { setIsSignUp(false); setIsAuthModalOpen(true); }} className="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-indigo-600/30">
                                         {t.nav_login}
                                     </button>
                                 )}
@@ -379,94 +396,224 @@
                         </div>
                     </header>
 
+                    {/* ОСНОВНОЙ КОНТЕНТ */}
                     <main className="flex-1 relative z-10">
+                        {/* ГЛАВНАЯ СТРАНИЦА */}
                         {activeTab === 'home' && (
-                            <section className="pt-24 pb-16 px-6 max-w-5xl mx-auto text-center">
-                                <h1 className="text-4xl md:text-6xl font-extrabold text-white leading-tight mb-6">
-                                    {t.hero_title}
-                                </h1>
-                                <p className="text-lg text-slate-400 mb-10 max-w-2xl mx-auto">
-                                    {t.hero_subtitle}
-                                </p>
+                            <div className="space-y-24 pb-20">
+                                {/* Hero Section */}
+                                <section className="pt-20 px-6 max-w-5xl mx-auto text-center">
+                                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-950/60 border border-indigo-800/50 text-indigo-400 text-xs font-semibold mb-8">
+                                        <span>✨ Новинка 2026: Генерация карточек в 4K resolution</span>
+                                    </div>
 
-                                <div className="max-w-2xl mx-auto bg-slate-900/90 border border-slate-800 p-3 rounded-2xl shadow-2xl flex items-center gap-3">
-                                    <label className="w-12 h-12 rounded-xl bg-slate-800 hover:bg-slate-700 flex items-center justify-center cursor-pointer text-slate-300 hover:text-white transition-all shrink-0">
-                                        +
-                                        <input type="file" accept="image/*" className="hidden" onChange={(e) => setSelectedImage(e.target.files[0])} />
-                                    </label>
+                                    <h1 className="text-4xl sm:text-6xl font-extrabold text-white leading-tight tracking-tight mb-6">
+                                        {t.hero_title}
+                                    </h1>
+                                    <p className="text-base sm:text-lg text-slate-400 mb-10 max-w-2xl mx-auto">
+                                        {t.hero_subtitle}
+                                    </p>
 
-                                    <input 
-                                        type="text" 
-                                        value={prompt}
-                                        onChange={(e) => setPrompt(e.target.value)}
-                                        placeholder={t.prompt_placeholder}
-                                        className="flex-1 bg-transparent text-sm text-white placeholder-slate-500 focus:outline-none px-2"
-                                    />
+                                    {/* Форма генератора */}
+                                    <div className="max-w-2xl mx-auto bg-slate-900/90 border border-slate-800 p-3.5 rounded-2xl shadow-2xl backdrop-blur-md">
+                                        <div className="flex flex-col sm:flex-row items-center gap-3">
+                                            <label className="w-full sm:w-auto h-12 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center justify-center cursor-pointer text-slate-300 text-xs font-semibold transition-all shrink-0">
+                                                <span>📷 {selectedImage ? "Фото загружено" : "Загрузить фото"}</span>
+                                                <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+                                            </label>
 
-                                    <button 
-                                        onClick={handleGenerate} 
-                                        disabled={isGenerating}
-                                        className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3.5 rounded-xl font-semibold text-xs transition-all shadow-lg shadow-indigo-600/30 flex items-center gap-2 whitespace-nowrap disabled:opacity-50"
-                                    >
-                                        <span>{isGenerating ? "Генерируем..." : t.btn_generate}</span>
-                                        <span>✨</span>
-                                    </button>
-                                </div>
-                                {selectedImage && (
-                                    <p className="text-xs text-emerald-400 mt-2">📷 Загружено фото: {selectedImage.name}</p>
-                                )}
-                            </section>
+                                            <input 
+                                                type="text" 
+                                                value={prompt}
+                                                onChange={(e) => setPrompt(e.target.value)}
+                                                placeholder={t.prompt_placeholder}
+                                                className="w-full bg-transparent text-sm text-white placeholder-slate-500 focus:outline-none px-3 py-2"
+                                            />
+
+                                            <button 
+                                                onClick={handleGenerate} 
+                                                disabled={isGenerating}
+                                                className="w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-7 py-3.5 rounded-xl font-bold text-xs transition-all shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 whitespace-nowrap disabled:opacity-50"
+                                            >
+                                                <span>{isGenerating ? "Генерируем AI..." : t.btn_generate}</span>
+                                                <span>✨</span>
+                                            </button>
+                                        </div>
+                                        {selectedImage && (
+                                            <div className="mt-2 text-left text-xs text-emerald-400 font-medium px-2">
+                                                ✓ Загружен файл: {selectedImage.name}
+                                            </div>
+                                        )}
+                                    </div>
+                                </section>
+
+                                {/* Раздел возможностей */}
+                                <section className="px-6 max-w-6xl mx-auto">
+                                    <div className="text-center mb-12">
+                                        <h2 className="text-2xl sm:text-4xl font-bold text-white mb-3">Всё для взрывных продаж на маркетплейсах</h2>
+                                        <p className="text-slate-400 text-sm">Создавайте карточки топового уровня без знания Photoshop</p>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl">
+                                            <div className="w-12 h-12 rounded-xl bg-indigo-600/20 text-indigo-400 flex items-center justify-center text-2xl mb-4 font-bold">⚡</div>
+                                            <h3 className="text-lg font-bold text-white mb-2">Генерация офферов за 5 сек</h3>
+                                            <p className="text-xs text-slate-400 leading-relaxed">ИИ Gemini составляет цепляющие триггеры, преимущества и заголовки специально под алгоритмы ранжирования.</p>
+                                        </div>
+
+                                        <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl">
+                                            <div className="w-12 h-12 rounded-xl bg-cyan-600/20 text-cyan-400 flex items-center justify-center text-2xl mb-4 font-bold">🎯</div>
+                                            <h3 className="text-lg font-bold text-white mb-2">Готовые сетки WB, Ozon, Uzum</h3>
+                                            <p className="text-xs text-slate-400 leading-relaxed">Переключайтесь между форматом 3:4 (Wildberries) и 1:1 (Ozon & Uzum) в один клик без потери качества.</p>
+                                        </div>
+
+                                        <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl">
+                                            <div className="w-12 h-12 rounded-xl bg-purple-600/20 text-purple-400 flex items-center justify-center text-2xl mb-4 font-bold">💎</div>
+                                            <h3 className="text-lg font-bold text-white mb-2">Экспорт в 4K PNG</h3>
+                                            <p className="text-xs text-slate-400 leading-relaxed">Скачивайте готовую карточку высокого разрешения, готовую к немедленной загрузке в кабинет продавца.</p>
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
                         )}
 
+                        {/* СТУДИЯ РЕДАКТОРА */}
                         {activeTab === 'studio' && (
-                            <section className="py-12 px-6 max-w-6xl mx-auto">
-                                <div className="flex justify-between items-center mb-8">
-                                    <h2 className="text-2xl font-bold text-white">Студия Слайдов</h2>
-                                    <button onClick={downloadCanvas} className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl text-xs font-semibold shadow-lg">
-                                        {t.btn_download}
-                                    </button>
+                            <section className="py-8 px-6 max-w-7xl mx-auto">
+                                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+                                    <div>
+                                        <h2 className="text-2xl font-bold text-white">Студия Canvas</h2>
+                                        <p className="text-xs text-slate-400">Настраивайте карточку товара и скачивайте готовый PNG</p>
+                                    </div>
+
+                                    <div className="flex items-center gap-3">
+                                        {/* Выбор формата */}
+                                        <div className="bg-slate-900 p-1 rounded-xl border border-slate-800 flex text-xs font-semibold">
+                                            <button onClick={() => setMarketplaceFormat('wb')} className={`px-3 py-1.5 rounded-lg transition-all ${marketplaceFormat === 'wb' ? 'bg-indigo-600 text-white' : 'text-slate-400'}`}>
+                                                WB (3:4)
+                                            </button>
+                                            <button onClick={() => setMarketplaceFormat('ozon')} className={`px-3 py-1.5 rounded-lg transition-all ${marketplaceFormat === 'ozon' ? 'bg-indigo-600 text-white' : 'text-slate-400'}`}>
+                                                Ozon / Uzum (1:1)
+                                            </button>
+                                        </div>
+
+                                        <button 
+                                            onClick={downloadPNG} 
+                                            disabled={isDownloading}
+                                            className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white px-6 py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-emerald-600/20 flex items-center gap-2 disabled:opacity-50"
+                                        >
+                                            <span>{isDownloading ? "Сохранение..." : t.btn_download}</span>
+                                            <span>📥</span>
+                                        </button>
+                                    </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    <div ref={canvasRef} className={`aspect-[3/4] rounded-3xl p-8 bg-gradient-to-b ${generatedCard.bgGradient} border border-slate-800 flex flex-col justify-between shadow-2xl relative overflow-hidden`}>
-                                        <div className="space-y-3">
-                                            <span className={`inline-block text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full text-white ${generatedCard.badgeColor}`}>
-                                                {generatedCard.subtitle}
-                                            </span>
-                                            <h3 className="text-3xl font-extrabold text-white leading-tight">
-                                                {generatedCard.title}
-                                            </h3>
-                                        </div>
+                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                                    {/* ПРЕВЬЮ КАРТОЧКИ (Холст для скачивания) */}
+                                    <div className="lg:col-span-6 flex justify-center">
+                                        <div 
+                                            ref={cardRef} 
+                                            className={`w-full max-w-[420px] ${marketplaceFormat === 'wb' ? 'aspect-[3/4]' : 'aspect-square'} rounded-3xl p-6 bg-gradient-to-b ${generatedCard.bgGradient} border border-slate-700/60 flex flex-col justify-between shadow-2xl relative overflow-hidden transition-all duration-300`}
+                                        >
+                                            {/* Неоновое свечение на фоне */}
+                                            <div className="absolute -top-20 -right-20 w-48 h-48 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"></div>
 
-                                        <div className="my-auto h-48 bg-slate-800/50 rounded-2xl border border-white/10 flex items-center justify-center text-slate-400 text-xs">
-                                            {selectedImage ? `[ Изображение: ${selectedImage.name} ]` : "[ 3D-Рендер / Фото товара без фона ]"}
-                                        </div>
+                                            {/* Верхний блок: Плашка + Заголовок */}
+                                            <div className="space-y-2 z-10">
+                                                <span className={`inline-block text-[11px] font-extrabold uppercase tracking-wider px-3.5 py-1 rounded-lg text-white shadow-md ${generatedCard.badgeColor}`}>
+                                                    {generatedCard.subtitle}
+                                                </span>
+                                                <h3 className={`text-2xl sm:text-3xl font-black ${generatedCard.textColor} leading-tight drop-shadow-md uppercase`}>
+                                                    {generatedCard.title}
+                                                </h3>
+                                            </div>
 
-                                        <div className="space-y-2">
-                                            {generatedCard.features.map((feat, idx) => (
-                                                <div key={idx} className="bg-slate-900/80 backdrop-blur-md p-3 rounded-xl border border-white/10 text-xs font-medium text-slate-200 flex items-center gap-2">
-                                                    <span className="text-emerald-400 font-bold">✓</span> {feat}
-                                                </div>
-                                            ))}
+                                            {/* Блок товара (Загруженная картинка или плейсхолдер) */}
+                                            <div className="my-auto h-44 sm:h-52 w-full rounded-2xl flex items-center justify-center relative overflow-hidden my-3">
+                                                {imagePreviewUrl ? (
+                                                    <img src={imagePreviewUrl} alt="Товар" className="max-h-full max-w-full object-contain drop-shadow-2xl" />
+                                                ) : (
+                                                    <div className="text-center p-4 bg-slate-900/60 backdrop-blur-md border border-white/10 rounded-2xl">
+                                                        <span className="text-3xl block mb-1">📦</span>
+                                                        <span className="text-xs text-slate-300 font-medium">Загрузите фото товара на главной</span>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Блок преимуществ */}
+                                            <div className="space-y-2 z-10">
+                                                {generatedCard.features.map((feat, idx) => (
+                                                    <div key={idx} className="bg-slate-950/80 backdrop-blur-md px-3.5 py-2.5 rounded-xl border border-white/10 text-xs font-semibold text-slate-100 flex items-center gap-2 shadow-lg">
+                                                        <span className="text-emerald-400 font-extrabold text-sm">✓</span>
+                                                        <span>{feat}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div className="bg-slate-900/60 p-6 rounded-3xl border border-slate-800 space-y-6">
-                                        <h4 className="text-lg font-bold text-white">Настройка элементов карточки</h4>
+                                    {/* ПАНЕЛЬ УПРАВЛЕНИЯ И РЕДАКТИРОВАНИЯ */}
+                                    <div className="lg:col-span-6 bg-slate-900/80 backdrop-blur-md p-6 rounded-3xl border border-slate-800 space-y-6">
+                                        <h3 className="text-lg font-bold text-white border-b border-slate-800 pb-3">Редактирование карточки</h3>
+
+                                        {/* Заголовок */}
                                         <div>
-                                            <label className="block text-xs text-slate-400 mb-1">Заголовок</label>
-                                            <input type="text" value={generatedCard.title} onChange={(e) => setGeneratedCard({...generatedCard, title: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white" />
+                                            <label className="block text-xs font-semibold text-slate-400 mb-1.5">Главный заголовок</label>
+                                            <input 
+                                                type="text" 
+                                                value={generatedCard.title} 
+                                                onChange={(e) => setGeneratedCard({...generatedCard, title: e.target.value})} 
+                                                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:border-indigo-500 focus:outline-none" 
+                                            />
                                         </div>
+
+                                        {/* Подзаголовок */}
                                         <div>
-                                            <label className="block text-xs text-slate-400 mb-1">Подзаголовок / Плашка</label>
-                                            <input type="text" value={generatedCard.subtitle} onChange={(e) => setGeneratedCard({...generatedCard, subtitle: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white" />
+                                            <label className="block text-xs font-semibold text-slate-400 mb-1.5">Текст плашки (Акцент)</label>
+                                            <input 
+                                                type="text" 
+                                                value={generatedCard.subtitle} 
+                                                onChange={(e) => setGeneratedCard({...generatedCard, subtitle: e.target.value})} 
+                                                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:border-indigo-500 focus:outline-none" 
+                                            />
                                         </div>
+
+                                        {/* Редактирование буллетов */}
                                         <div>
-                                            <label className="block text-xs text-slate-400 mb-2">Цветовой стиль</label>
-                                            <div className="flex gap-3">
-                                                <button onClick={() => setGeneratedCard({...generatedCard, bgGradient: "from-indigo-900 to-slate-900", badgeColor: "bg-indigo-600"})} className="w-8 h-8 rounded-full bg-indigo-600 border-2 border-white/20"></button>
-                                                <button onClick={() => setGeneratedCard({...generatedCard, bgGradient: "from-emerald-950 to-slate-900", badgeColor: "bg-emerald-600"})} className="w-8 h-8 rounded-full bg-emerald-600 border-2 border-white/20"></button>
-                                                <button onClick={() => setGeneratedCard({...generatedCard, bgGradient: "from-rose-950 to-slate-900", badgeColor: "bg-rose-600"})} className="w-8 h-8 rounded-full bg-rose-600 border-2 border-white/20"></button>
+                                            <label className="block text-xs font-semibold text-slate-400 mb-2">3 Ключевых преимущества</label>
+                                            <div className="space-y-2">
+                                                {generatedCard.features.map((feat, i) => (
+                                                    <input 
+                                                        key={i}
+                                                        type="text" 
+                                                        value={feat} 
+                                                        onChange={(e) => {
+                                                            const newFeats = [...generatedCard.features];
+                                                            newFeats[i] = e.target.value;
+                                                            setGeneratedCard({...generatedCard, features: newFeats});
+                                                        }}
+                                                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-xs text-white focus:border-indigo-500 focus:outline-none"
+                                                    />
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* Пресеты стилей */}
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-400 mb-2">Цветовой пресет фона</label>
+                                            <div className="grid grid-cols-4 gap-3">
+                                                <button onClick={() => changeStylePreset('cyberpunk')} className={`p-3 rounded-xl border text-xs font-bold text-center transition-all ${generatedCard.stylePreset === 'cyberpunk' ? 'border-indigo-500 bg-indigo-950/50 text-indigo-300' : 'border-slate-800 bg-slate-800/40 text-slate-400'}`}>
+                                                    Cyberpunk
+                                                </button>
+                                                <button onClick={() => changeStylePreset('gold')} className={`p-3 rounded-xl border text-xs font-bold text-center transition-all ${generatedCard.stylePreset === 'gold' ? 'border-amber-500 bg-amber-950/50 text-amber-300' : 'border-slate-800 bg-slate-800/40 text-slate-400'}`}>
+                                                    Премиум
+                                                </button>
+                                                <button onClick={() => changeStylePreset('emerald')} className={`p-3 rounded-xl border text-xs font-bold text-center transition-all ${generatedCard.stylePreset === 'emerald' ? 'border-emerald-500 bg-emerald-950/50 text-emerald-300' : 'border-slate-800 bg-slate-800/40 text-slate-400'}`}>
+                                                    Эко Свежесть
+                                                </button>
+                                                <button onClick={() => changeStylePreset('clean')} className={`p-3 rounded-xl border text-xs font-bold text-center transition-all ${generatedCard.stylePreset === 'clean' ? 'border-cyan-500 bg-cyan-950/50 text-cyan-300' : 'border-slate-800 bg-slate-800/40 text-slate-400'}`}>
+                                                    Строгий
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -474,71 +621,71 @@
                             </section>
                         )}
 
+                        {/* ТАРИФЫ */}
                         {activeTab === 'pricing' && (
                             <section className="py-16 px-6 max-w-5xl mx-auto">
-                                <h2 className="text-3xl font-extrabold text-center text-white mb-12">{t.nav_pricing}</h2>
+                                <div className="text-center mb-12">
+                                    <h2 className="text-3xl font-extrabold text-white mb-3">{t.nav_pricing}</h2>
+                                    <p className="text-slate-400 text-sm">Выберите подходящий тариф для вашего бизнеса</p>
+                                </div>
+
                                 <div className="grid md:grid-cols-2 gap-8">
-                                    <div className="bg-slate-900 p-8 rounded-3xl border border-slate-800 space-y-6">
-                                        <h3 className="text-xl font-bold text-white">Старт</h3>
-                                        <div className="text-3xl font-black text-white">Бесплатно</div>
-                                        <p className="text-sm text-slate-400">3 генерации карточек при регистрации.</p>
+                                    <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl space-y-6">
+                                        <h3 className="text-xl font-bold text-white">Старт (Бесплатно)</h3>
+                                        <div className="text-4xl font-black text-white">0 UZS</div>
+                                        <ul className="space-y-3 text-xs text-slate-300">
+                                            <li>✓ 5 бесплатных генераций карточек</li>
+                                            <li>✓ Шаблоны Wildberries & Ozon</li>
+                                            <li>✓ Скачивание в формате PNG</li>
+                                        </ul>
                                     </div>
-                                    <div className="bg-gradient-to-b from-indigo-950 to-slate-900 p-8 rounded-3xl border border-indigo-500/30 space-y-6">
+
+                                    <div className="bg-gradient-to-b from-indigo-950 via-slate-900 to-slate-950 border border-indigo-500/50 p-8 rounded-3xl space-y-6 relative overflow-hidden shadow-2xl">
+                                        <span className="absolute top-4 right-4 bg-indigo-600 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase">Популярный</span>
                                         <h3 className="text-xl font-bold text-white">PRO Продавец</h3>
-                                        <div className="text-3xl font-black text-white">99,000 UZS / мес</div>
-                                        <p className="text-sm text-slate-300">Неограниченная AI-генерация инфографики и 3D-фонов.</p>
+                                        <div className="text-4xl font-black text-white">99,000 UZS <span className="text-xs text-slate-400 font-normal">/ мес</span></div>
+                                        <ul className="space-y-3 text-xs text-slate-200">
+                                            <li>✓ Неограниченная генерация текстов ИИ</li>
+                                            <li>✓ Поддержка 4K разрешения</li>
+                                            <li>✓ Приоритетная генерация без очередей</li>
+                                        </ul>
                                     </div>
                                 </div>
                             </section>
                         )}
                     </main>
 
+                    {/* МОДАЛЬНОЕ ОКНО АВТОРИЗАЦИИ */}
                     {isAuthModalOpen && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
                             <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl max-w-md w-full relative shadow-2xl">
                                 <button onClick={() => setIsAuthModalOpen(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white">✕</button>
-                                <h3 className="text-2xl font-bold text-white mb-2">{isSignUp ? "Создать аккаунт" : t.auth_modal_title}</h3>
+                                <h3 className="text-2xl font-bold text-white mb-6 text-center">{t.auth_modal_title}</h3>
                                 
-                                <button onClick={handleGoogleAuth} className="w-full bg-white hover:bg-slate-100 text-slate-900 font-semibold py-3 rounded-xl mb-4 text-sm flex items-center justify-center gap-3">
+                                <button onClick={handleGoogleAuth} className="w-full bg-white hover:bg-slate-100 text-slate-900 font-bold py-3 rounded-xl mb-4 text-xs flex items-center justify-center gap-3 shadow-md">
                                     <span>{t.auth_google}</span>
                                 </button>
 
                                 <form onSubmit={handleAuth} className="space-y-4">
                                     <div>
-                                        <label className="block text-xs font-medium text-slate-400 mb-1">E-mail</label>
-                                        <input type="email" required value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white" />
+                                        <label className="block text-xs font-semibold text-slate-400 mb-1">E-mail</label>
+                                        <input type="email" required value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white" />
                                     </div>
                                     <div>
-                                        <div className="flex justify-between items-center mb-1">
-                                            <label className="block text-xs font-medium text-slate-400">Пароль</label>
-                                            <button type="button" onClick={generatePassword} className="text-[11px] text-indigo-400 hover:underline">{t.pwd_gen_btn}</button>
-                                        </div>
-                                        <input type="password" required value={authPassword} onChange={(e) => handlePasswordChange(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white" />
-                                        
-                                        {authPassword && (
-                                            <div className="mt-2">
-                                                <div className="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
-                                                    <div className={`h-full transition-all ${passwordScore <= 25 ? 'w-1/4 bg-rose-500' : passwordScore <= 50 ? 'w-2/4 bg-amber-500' : 'w-full bg-emerald-500'}`}></div>
-                                                </div>
-                                            </div>
-                                        )}
+                                        <label className="block text-xs font-semibold text-slate-400 mb-1">Пароль</label>
+                                        <input type="password" required value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white" />
                                     </div>
                                     {authError && <p className="text-xs text-rose-400 bg-rose-950/40 p-2 rounded-lg">{authError}</p>}
-                                    <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 rounded-xl text-sm">
+                                    <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl text-xs shadow-lg shadow-indigo-600/30">
                                         {isSignUp ? "Зарегистрироваться" : "Войти"}
                                     </button>
                                 </form>
-                                <div className="mt-4 text-center">
-                                    <button onClick={() => setIsSignUp(!isSignUp)} className="text-xs text-indigo-400 hover:underline">
-                                        {isSignUp ? "Уже есть аккаунт? Войти" : "Нет аккаунта? Зарегистрироваться"}
-                                    </button>
-                                </div>
                             </div>
                         </div>
                     )}
 
-                    <footer className="border-t border-slate-800 py-6 px-6 text-center text-xs text-slate-500">
-                        CardCraft AI © 2026. All rights reserved.
+                    <footer className="border-t border-slate-900 py-6 px-6 text-center text-xs text-slate-500">
+                        CardCraft AI © 2026. ИИ-платформа генерации инфографики.
                     </footer>
                 </div>
             );
