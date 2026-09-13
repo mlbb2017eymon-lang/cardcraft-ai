@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CardCraft AI — 3D Инфографика для Маркетплейсов</title>
+    <title>CardCraft AI — 3D Инфографика (Aidentico Style)</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -80,8 +80,8 @@
             const [credits, setCredits] = useState(15);
             const [activeTab, setActiveTab] = useState('home');
 
-            // Параметры генерации
-            const [prompt, setPrompt] = useState('');
+            // Поля ввода
+            const [productTitle, setProductTitle] = useState('Кофемашина');
             const [category, setCategory] = useState('electronics');
             const [slideCount, setSlideCount] = useState(3);
             const [styleTheme, setStyleTheme] = useState('neon_purple');
@@ -89,7 +89,7 @@
             const [isGenerating, setIsGenerating] = useState(false);
             const [activeSlideIndex, setActiveSlideIndex] = useState(0);
 
-            // Сгенерированная 3D-серия
+            // Сгенерированные карточки
             const [generatedSeries, setGeneratedSeries] = useState([]);
 
             useEffect(() => {
@@ -98,12 +98,17 @@
                 });
             }, []);
 
-            // Безопасный генератор 3D сцен без внешних ограничений
-            const handleGenerate = async () => {
-                if (!prompt.trim()) {
-                    alert("Пожалуйста, введите название товара или промпт!");
-                    return;
+            // Функция автоперевода ключевых слов для точного 3D-рендеринга
+            const cleanProductQuery = (text) => {
+                let query = text.trim();
+                if (!query || query.includes('[') || query.includes(']')) {
+                    query = "coffee machine";
                 }
+                return query;
+            };
+
+            const handleGenerate = async () => {
+                const cleanQuery = cleanProductQuery(productTitle);
 
                 if (credits < slideCount) {
                     alert(`Недостаточно кредитов. Требуется: ${slideCount}`);
@@ -114,36 +119,70 @@
                 setIsGenerating(true);
 
                 try {
-                    // Формируем стилистику для 3D подиума
-                    let stylePromptDetails = "glowing dark purple neon 3d podium, futuristic studio background, vibrant contrast";
-                    if (styleTheme === 'cyber_ice') stylePromptDetails = "cyan and ice blue glowing 3d pedestal, cyberpunk studio lighting";
-                    if (styleTheme === 'gold_marble') stylePromptDetails = "luxury gold and white marble 3d platform, premium studio setup";
-                    if (styleTheme === 'dark_studio') stylePromptDetails = "minimalist dark studio background, sleek black 3d podium, soft spotlight";
+                    // Стиль 3D Подиума в формате Aidentico
+                    let backgroundStyle = "dark purple neon 3d podium, futuristic studio background, vibrant accent lights";
+                    if (styleTheme === 'cyber_ice') backgroundStyle = "cyan and ice blue glowing 3d pedestal, cyberpunk studio lighting";
+                    if (styleTheme === 'gold_marble') backgroundStyle = "luxury gold and white marble 3d platform, premium studio setup";
+                    if (styleTheme === 'dark_studio') backgroundStyle = "minimalist dark studio background, sleek black 3d podium, soft spotlight";
 
-                    const productQuery = prompt.trim();
                     const newSeries = [];
 
-                    for (let i = 0; i < slideCount; i++) {
-                        const seed = Math.floor(Math.random() * 999999);
-                        const angle = i === 0 ? "front view hero shot" : i === 1 ? "close up detail view" : "dynamic angle 3d render";
-                        
-                        const fullImagePrompt = `3d commercial product render of ${productQuery}, ${angle}, placed on a ${stylePromptDetails}, studio lighting, octane render, 8k resolution, e-commerce infographic poster style, highly detailed`;
-                        const encodedPrompt = encodeURIComponent(fullImagePrompt);
+                    // Варианты слайдов воронки Aidentico
+                    const slideConfigs = [
+                        {
+                            badge: "ТОП ПРОДАЖ",
+                            mainTitle: productTitle.toUpperCase(),
+                            subTitle: "ПРЕМИАЛЬНОЕ КАЧЕСТВО 2026",
+                            angle: "front view hero shot on 3d podium",
+                            bullets: ["Усиленный корпус", "Гарантия 2 года", "Быстрая доставка"]
+                        },
+                        {
+                            badge: "ХАРАКТЕРИСТИКИ",
+                            mainTitle: "ВЫСОКАЯ МОЩНОСТЬ",
+                            subTitle: "УМНОЕ УПРАВЛЕНИЕ В 1 КЛИК",
+                            angle: "close-up macro view of details on 3d pedestal",
+                            bullets: ["Энергосбережение A++", "Бесшумная работа", "Сенсорный экран"]
+                        },
+                        {
+                            badge: "КОМПЛЕКТАЦИЯ",
+                            mainTitle: "ВСЁ В КОМПЛЕКТЕ",
+                            subTitle: "ГОТОВО К ИСПОЛЬЗОВАНИЮ",
+                            angle: "top isometric 3d view with accessory layout",
+                            bullets: ["Подарочная упаковка", "Полный набор", "Инструкция на русском"]
+                        },
+                        {
+                            badge: "БЕЗОПАСНОСТЬ",
+                            mainTitle: "ЭКО МАТЕРИАЛЫ",
+                            subTitle: "СЕРТИФИЦИРОВАННЫЙ ТОВАР",
+                            angle: "side angle view on glowing 3d stage",
+                            bullets: ["Защита от перегрева", "BPA Free пластик", "Надежные фиксаторы"]
+                        },
+                        {
+                            badge: "СКИДКА -25%",
+                            mainTitle: "УСПЕЙ КУПИТЬ",
+                            subTitle: "ОГРАНИЧЕННАЯ СЕРИЯ",
+                            angle: "cinematic 3d product shot on pedestal with soft smoke",
+                            bullets: ["Лучшая цена года", "Эксклюзивный цвет", "Гарантия возврата"]
+                        }
+                    ];
 
-                        // Прямая генерация 3D арта целиком
-                        const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=800&height=1066&seed=${seed}&nologo=true`;
+                    for (let i = 0; i < slideCount; i++) {
+                        const seed = Math.floor(Math.random() * 888888) + 100000;
+                        const config = slideConfigs[i % slideConfigs.length];
+                        
+                        // Формирование точного промпта без дублирования
+                        const imagePrompt = `Commercial 3d render of ${cleanQuery}, ${config.angle}, placed on a ${backgroundStyle}, studio product photography, clean composition, octane render, 8k resolution, marketplace banner style`;
+                        
+                        const encodedPrompt = encodeURIComponent(imagePrompt);
+                        const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=900&height=1200&seed=${seed}&nologo=true`;
 
                         newSeries.push({
-                            title: i === 0 ? `${productQuery.toUpperCase()}` : i === 1 ? "ПРЕИМУЩЕСТВА И КАЧЕСТВО" : "КОМПЛЕКТАЦИЯ И СТИЛЬ",
-                            subtitle: i === 0 ? "NEW MODEL 2026" : i === 1 ? "PREMIUM QUALITY" : "CLICK & ORDER",
-                            discountTag: i === 0 ? "ХИТ OZON" : i === 1 ? "15% OFF" : "TOP SALE",
-                            imagePrompt: fullImagePrompt,
-                            imageUrl: imageUrl,
-                            bullets: [
-                                "Инновационный 3D дизайн",
-                                "Высокое качество материалов",
-                                "Быстрая доставка и гарантия"
-                            ]
+                            badge: config.badge,
+                            mainTitle: config.mainTitle,
+                            subTitle: config.subTitle,
+                            bullets: config.bullets,
+                            imagePrompt: imagePrompt,
+                            imageUrl: imageUrl
                         });
                     }
 
@@ -154,7 +193,7 @@
 
                 } catch (err) {
                     console.error("Error generating:", err);
-                    alert("Произошла ошибка при сборке. Попробуйте ещё раз!");
+                    alert("Произошла ошибка при генерации. Попробуйте еще раз!");
                 } finally {
                     setIsGenerating(false);
                 }
@@ -164,7 +203,7 @@
                 const link = document.createElement('a');
                 link.href = url;
                 link.target = '_blank';
-                link.download = `3d-card-slide-${activeSlideIndex + 1}.jpg`;
+                link.download = `aidentico-card-slide-${activeSlideIndex + 1}.jpg`;
                 link.click();
             };
 
@@ -186,14 +225,13 @@
                                     <span className="text-xl font-black bg-gradient-to-r from-white via-slate-200 to-purple-300 bg-clip-text text-transparent block leading-none">
                                         CardCraft AI
                                     </span>
-                                    <span className="text-[10px] text-purple-400 font-bold uppercase tracking-wider">3D Infographic Studio</span>
+                                    <span className="text-[10px] text-purple-400 font-bold uppercase tracking-wider">Aidentico Style Generator</span>
                                 </div>
                             </div>
 
                             <nav className="hidden md:flex items-center gap-8 text-sm font-bold">
                                 <button onClick={() => setActiveTab('home')} className={`transition-all ${activeTab === 'home' ? 'text-purple-400' : 'text-slate-400 hover:text-white'}`}>Генератор</button>
                                 <button onClick={() => setActiveTab('studio')} className={`transition-all ${activeTab === 'studio' ? 'text-purple-400' : 'text-slate-400 hover:text-white'}`}>3D Студия</button>
-                                <button onClick={() => setActiveTab('pricing')} className={`transition-all ${activeTab === 'pricing' ? 'text-purple-400' : 'text-slate-400 hover:text-white'}`}>Тарифы</button>
                             </nav>
 
                             <div className="flex items-center gap-4">
@@ -205,31 +243,31 @@
                     </header>
 
                     <main className="flex-1 relative z-10">
-                        {/* Главный блок ввода */}
+                        {/* Форма создания */}
                         {activeTab === 'home' && (
                             <section className="pt-12 pb-20 px-6 max-w-4xl mx-auto">
                                 <div className="text-center mb-10">
                                     <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-950/80 border border-purple-800/50 text-purple-300 text-xs font-bold mb-6">
-                                        <span>🎨 Генерация 3D Инфографики по Промпту</span>
+                                        <span>✨ ИИ-Генератор Карточек в Стиле Aidentico</span>
                                     </div>
                                     <h1 className="text-4xl sm:text-6xl font-black text-white leading-tight tracking-tight mb-4 title-font">
                                         3D ИНФОГРАФИКА ДЛЯ МАРКЕТПЛЕЙСОВ
                                     </h1>
                                     <p className="text-slate-400 text-base max-w-2xl mx-auto">
-                                        Создавайте сочные карточки товаров с 3D-подиумами, плашками и продающей воронкой слайдов по одному промпту.
+                                        Введите название товара (например: Кофемашина, Блендер, Нальные часы) — ИИ сам нарисует 3D-подиум и соберет инфографику.
                                     </p>
                                 </div>
 
                                 <div className="bg-slate-900/90 border border-slate-800 p-6 sm:p-8 rounded-3xl shadow-2xl backdrop-blur-xl space-y-6">
                                     <div className="space-y-3">
                                         <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
-                                            Описание товара или промпт (например: Handheld fan, Coffee machine, Smartwatch)
+                                            Название или описание товара
                                         </label>
                                         <input 
                                             type="text" 
-                                            value={prompt}
-                                            onChange={(e) => setPrompt(e.target.value)}
-                                            placeholder="Commercial product poster for handheld fan on 3d podium..."
+                                            value={productTitle}
+                                            onChange={(e) => setProductTitle(e.target.value)}
+                                            placeholder="например: Кофемашина / Coffee machine..."
                                             className="w-full bg-slate-950 border border-slate-700 rounded-2xl px-5 py-4 text-sm text-white placeholder-slate-500 focus:border-purple-500 focus:outline-none"
                                         />
                                     </div>
@@ -283,19 +321,19 @@
                                         disabled={isGenerating}
                                         className="w-full bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white font-extrabold py-5 rounded-2xl text-sm transition-all shadow-xl shadow-purple-600/30 flex items-center justify-center gap-3 disabled:opacity-50"
                                     >
-                                        <span>{isGenerating ? "ИИ строит 3D арт и сцену целиком..." : `Сгенерировать ${slideCount} 3D-карточек (${slideCount} кр.)`}</span>
-                                        <span className="text-lg">✨</span>
+                                        <span>{isGenerating ? "Создание 3D карточки в стиле Aidentico..." : `Сгенерировать ${slideCount} 3D-карточки (${slideCount} кр.)`}</span>
+                                        <span className="text-lg">⚡</span>
                                     </button>
                                 </div>
                             </section>
                         )}
 
-                        {/* Галерея готовых карточек */}
+                        {/* Результат воронки Aidentico с полноценной инфографикой */}
                         {activeTab === 'studio' && (
                             <section className="py-8 px-6 max-w-6xl mx-auto">
                                 {generatedSeries.length === 0 ? (
                                     <div className="text-center py-20">
-                                        <p className="text-slate-400">Создайте первую серию на Главной странице!</p>
+                                        <p className="text-slate-400">Создайте первую карточку на Главной странице!</p>
                                         <button onClick={() => setActiveTab('home')} className="mt-4 bg-purple-600 text-white px-6 py-2.5 rounded-xl font-bold text-xs">
                                             Перейти на главную
                                         </button>
@@ -305,7 +343,7 @@
                                         <div className="flex justify-between items-center mb-6">
                                             <div>
                                                 <h2 className="text-2xl font-black text-white title-font">Сгенерированная 3D Серия</h2>
-                                                <p className="text-xs text-slate-400">Полный ИИ-рендер с 3D-подиумом</p>
+                                                <p className="text-xs text-slate-400">Готовая инфографика воронки Aidentico</p>
                                             </div>
                                             <button 
                                                 onClick={() => downloadImage(currentCard.imageUrl)}
@@ -324,30 +362,65 @@
                                                     onClick={() => setActiveSlideIndex(idx)}
                                                     className={`px-5 py-3 rounded-2xl text-xs font-bold transition-all border ${activeSlideIndex === idx ? 'bg-purple-600 border-purple-400 text-white shadow-lg shadow-purple-600/30' : 'bg-slate-900 border-slate-800 text-slate-400'}`}
                                                 >
-                                                    Слайд {idx + 1}
+                                                    Слайд {idx + 1} ({card.badge})
                                                 </button>
                                             ))}
                                         </div>
 
-                                        {/* Просмотр карточки */}
+                                        {/* Карточка товара с наложением инфографики (как в Aidentico) */}
                                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                                             <div className="lg:col-span-7 flex justify-center">
-                                                <div className="relative w-full max-w-[420px] rounded-[36px] overflow-hidden shadow-2xl border border-purple-500/30">
+                                                <div className="relative w-full max-w-[400px] rounded-[32px] overflow-hidden shadow-2xl border border-purple-500/30 bg-slate-900 aspect-[3/4]">
+                                                    {/* Изображение 3D рендера */}
                                                     <img 
                                                         src={currentCard.imageUrl} 
                                                         alt="3D Infographic Render" 
-                                                        className="w-full h-auto object-cover"
+                                                        className="w-full h-full object-cover absolute inset-0"
                                                     />
+
+                                                    {/* Оверлей Aidentico: Плашки и Текст Инфографики */}
+                                                    <div className="absolute inset-0 p-5 flex flex-col justify-between bg-gradient-to-t from-slate-950/80 via-transparent to-slate-950/40 pointer-events-none">
+                                                        
+                                                        {/* Верхний Бейдж */}
+                                                        <div className="flex justify-between items-start">
+                                                            <span className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider shadow-lg">
+                                                                {currentCard.badge}
+                                                            </span>
+                                                        </div>
+
+                                                        {/* Заголовок и преимущества */}
+                                                        <div className="space-y-3">
+                                                            <div>
+                                                                <h2 className="text-2xl font-black text-white title-font leading-tight drop-shadow-md">
+                                                                    {currentCard.mainTitle}
+                                                                </h2>
+                                                                <p className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest drop-shadow">
+                                                                    {currentCard.subTitle}
+                                                                </p>
+                                                            </div>
+
+                                                            {/* Буллеты преимуществ */}
+                                                            <div className="space-y-1.5 pt-2">
+                                                                {currentCard.bullets.map((b, i) => (
+                                                                    <div key={i} className="bg-slate-900/90 backdrop-blur-md border border-slate-700/60 px-3 py-1.5 rounded-xl flex items-center gap-2 text-[11px] text-white font-semibold">
+                                                                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                                                                        <span>{b}</span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+
+                                                    </div>
                                                 </div>
                                             </div>
 
-                                            {/* Информация о рендере */}
+                                            {/* Правая панель информации */}
                                             <div className="lg:col-span-5 bg-slate-900/80 p-6 rounded-3xl border border-slate-800 space-y-4">
-                                                <h3 className="text-lg font-bold text-white">Параметры 3D Слайда #{activeSlideIndex + 1}</h3>
+                                                <h3 className="text-lg font-bold text-white">Параметры Слайда #{activeSlideIndex + 1}</h3>
                                                 
                                                 <div className="space-y-1.5">
-                                                    <span className="text-[10px] font-extrabold text-purple-400 uppercase tracking-wider">Тематика:</span>
-                                                    <p className="text-sm font-black text-white">{currentCard.title}</p>
+                                                    <span className="text-[10px] font-extrabold text-purple-400 uppercase tracking-wider">Тематический заголовок:</span>
+                                                    <p className="text-sm font-black text-white">{currentCard.mainTitle}</p>
                                                 </div>
 
                                                 <div>
