@@ -3,19 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CardCraft AI — AI Studio для E-commerce</title>
+    <title>CardCraft AI — AI-генератор инфографики для маркетплейсов</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* Базовый темный фон */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        
         body {
-            background-color: #030712;
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0f19;
             color: #f8fafc;
             overflow-x: hidden;
-            min-height: 100vh;
         }
 
-        /* КОНТЕЙНЕР АНИМИРОВАННОГО ФОНА */
+        /* Анимированный мягкий фон */
         .bg-glow-container {
             position: fixed;
             top: 0;
@@ -27,417 +28,352 @@
             overflow: hidden;
         }
 
-        /* АНИМИРОВАННЫЕ ЯРКИЕ СФЕРЫ */
         .orb {
             position: absolute;
             border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.6;
-            animation: floatOrb 12s ease-in-out infinite alternate;
+            filter: blur(90px);
+            opacity: 0.45;
+            animation: floatOrb 14s ease-in-out infinite alternate;
         }
 
         .orb-1 {
-            top: -10%;
-            left: -10%;
-            width: 55vw;
-            height: 55vw;
-            background: radial-gradient(circle, #6366f1 0%, rgba(99, 102, 241, 0) 70%);
-            animation-duration: 14s;
+            top: -10%; left: 15%; width: 50vw; height: 50vw;
+            background: radial-gradient(circle, #4f46e5 0%, rgba(79, 70, 229, 0) 70%);
         }
 
         .orb-2 {
-            bottom: -15%;
-            right: -10%;
-            width: 60vw;
-            height: 60vw;
-            background: radial-gradient(circle, #8b5cf6 0%, rgba(139, 92, 246, 0) 70%);
-            animation-delay: -4s;
-            animation-duration: 18s;
+            bottom: -10%; right: 10%; width: 55vw; height: 55vw;
+            background: radial-gradient(circle, #06b6d4 0%, rgba(6, 182, 212, 0) 70%);
+            animation-delay: -5s;
         }
 
-        .orb-3 {
-            top: 35%;
-            left: 30%;
-            width: 45vw;
-            height: 45vw;
-            background: radial-gradient(circle, #3b82f6 0%, rgba(59, 130, 246, 0) 70%);
-            animation-delay: -7s;
-            animation-duration: 16s;
-        }
-
-        .orb-4 {
-            bottom: 20%;
-            left: -5%;
-            width: 40vw;
-            height: 40vw;
-            background: radial-gradient(circle, #ec4899 0%, rgba(236, 72, 153, 0) 70%);
-            animation-delay: -10s;
-            animation-duration: 20s;
-        }
-
-        /* ТРАЕКТОРИЯ ДВИЖЕНИЯ И ВРАЩЕНИЯ СФЕР */
         @keyframes floatOrb {
-            0% {
-                transform: translate(0, 0) scale(1);
-            }
-            50% {
-                transform: translate(80px, 60px) scale(1.15);
-            }
-            100% {
-                transform: translate(-60px, -80px) scale(0.9);
-            }
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(40px, 50px) scale(1.1); }
+            100% { transform: translate(-30px, -40px) scale(0.95); }
         }
 
-        /* Стеклянные карточки с размытием */
-        .glass-card {
-            background: rgba(15, 23, 42, 0.65);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .bento-card-light {
+            background: #ffffff;
+            color: #0f172a;
+            border-radius: 2rem;
+        }
+
+        .bento-card-soft {
+            background: #f1f5f9;
+            color: #0f172a;
+            border-radius: 2rem;
+        }
+
+        .bento-card-dark {
+            background: #111827;
+            color: #f8fafc;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            border-radius: 2rem;
         }
     </style>
 </head>
-<body class="flex flex-col relative font-sans antialiased">
+<body class="relative min-h-screen flex flex-col justify-between">
 
-    <!-- 🔥 ЯРКИЙ АНИМИРОВАННЫЙ ФОН 🔥 -->
+    <!-- ФОН -->
     <div class="bg-glow-container">
         <div class="orb orb-1"></div>
         <div class="orb orb-2"></div>
-        <div class="orb orb-3"></div>
-        <div class="orb orb-4"></div>
     </div>
 
-    <!-- Верхняя шапка -->
-    <header class="border-b border-white/10 bg-slate-950/70 backdrop-blur-md px-6 py-4 flex justify-between items-center fixed top-0 w-full z-40">
-        <div class="flex items-center gap-3">
-            <h1 class="text-xl font-extrabold bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">
-                CardCraft AI
-            </h1>
-            <span class="text-xs px-2.5 py-0.5 rounded-full bg-indigo-950/80 text-indigo-300 border border-indigo-700/50">
-                E-commerce Studio
-            </span>
-        </div>
-        
-        <div id="header-auth-action">
-            <button onclick="openAuthModal()" class="px-5 py-2 text-sm font-medium bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-all shadow-lg shadow-indigo-600/30">
-                Попробовать бесплатно / Вход
-            </button>
+    <!-- ШАПКА -->
+    <header class="fixed top-0 w-full z-50 glass-panel border-b border-white/10 px-6 py-4">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-cyan-400 flex items-center justify-center font-black text-xl text-white shadow-lg shadow-indigo-500/30">
+                    C
+                </div>
+                <span class="text-xl font-bold bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">
+                    CardCraft AI
+                </span>
+            </div>
+
+            <!-- Навигация -->
+            <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
+                <a href="#features" class="hover:text-white transition-colors" data-i18n="nav_features">Возможности</a>
+                <a href="#how-it-works" class="hover:text-white transition-colors" data-i18n="nav_how">Как работает</a>
+                <a href="#pricing" class="hover:text-white transition-colors" data-i18n="nav_pricing">Тарифы</a>
+            </nav>
+
+            <!-- Правый блок: Языки + Авторизация -->
+            <div class="flex items-center gap-4">
+                
+                <!-- Переключатель языков -->
+                <div class="flex items-center bg-slate-900/80 p-1 rounded-lg border border-white/10 text-xs font-semibold">
+                    <button onclick="setLanguage('ru')" id="lang-ru" class="px-2.5 py-1 rounded-md transition-all text-white bg-indigo-600">RU</button>
+                    <button onclick="setLanguage('uz')" id="lang-uz" class="px-2.5 py-1 rounded-md transition-all text-slate-400 hover:text-white">UZ</button>
+                    <button onclick="setLanguage('en')" id="lang-en" class="px-2.5 py-1 rounded-md transition-all text-slate-400 hover:text-white">EN</button>
+                </div>
+
+                <button onclick="openAuthModal()" class="px-5 py-2.5 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl transition-all shadow-lg shadow-indigo-600/30">
+                    <span data-i18n="btn_login">Вход / Регистрация</span>
+                </button>
+            </div>
         </div>
     </header>
 
-    <!-- Главный контейнер -->
-    <div class="flex-1 flex pt-20 relative z-10">
+    <!-- ГЛАВНЫЙ ЭКРАН (HERO) -->
+    <section class="pt-36 pb-20 px-6 relative z-10 max-w-5xl mx-auto text-center">
+        <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight text-white mb-6 leading-tight" data-i18n="hero_title">
+            CardCraft AI — искусственный интеллект для продавцов на маркетплейсах
+        </h1>
+        <p class="text-lg md:text-xl text-slate-300 mb-8 max-w-3xl mx-auto leading-relaxed" data-i18n="hero_subtitle">
+            Инструмент, который создает сочные карточки товаров, удаляет фон и генерирует продающую инфографику за секунды.
+        </p>
 
-        <!-- Боковое меню -->
-        <aside id="sidebar" class="w-64 border-r border-white/10 bg-slate-950/70 backdrop-blur-md p-4 flex flex-col justify-between hidden transition-all">
-            <div class="space-y-6">
-                <div class="p-3 bg-slate-900/80 rounded-xl border border-white/10">
-                    <div id="user-email-display" class="text-xs text-slate-400 truncate mb-1">user@example.com</div>
-                    <div id="user-credits-badge" class="inline-block bg-indigo-950 text-indigo-300 border border-indigo-700/50 px-2.5 py-0.5 rounded-full text-xs font-semibold">
-                        ⚡ 3 кредита
-                    </div>
-                </div>
-
-                <nav class="space-y-1">
-                    <button onclick="switchTab('workspace')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-all text-sm font-medium">
-                        <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                        Главная (Создать)
-                    </button>
-                    <button onclick="switchTab('gallery')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-all text-sm font-medium">
-                        <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                        Мои работы
-                    </button>
-                    <button onclick="switchTab('referral')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-all text-sm font-medium">
-                        <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                        Пригласи друга (+50⚡)
-                    </button>
-                    <button onclick="switchTab('pricing')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-all text-sm font-medium">
-                        <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        Подписка и Тарифы
-                    </button>
-                </nav>
-            </div>
-
-            <button onclick="logout()" class="flex items-center gap-2 px-3 py-2 text-xs text-slate-400 hover:text-red-400 transition-colors">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                Выйти из аккаунта
-            </button>
-        </aside>
-
-        <!-- Рабочая зона -->
-        <main class="flex-1 p-6 max-w-5xl mx-auto flex flex-col justify-center items-center">
-            
-            <!-- Генератор -->
-            <div id="generator-widget" class="w-full max-w-2xl glass-card p-8 rounded-2xl shadow-2xl">
-                <h2 class="text-2xl font-bold text-white mb-2 text-center">Создайте продающую карточку товара за секунды</h2>
-                <p class="text-sm text-slate-300 mb-6 text-center">Загрузите фото товара и описание — AI сделает всё остальное</p>
-
-                <div class="space-y-4">
-                    <div class="border-2 border-dashed border-white/20 hover:border-indigo-400/80 rounded-xl p-6 text-center cursor-pointer transition-all bg-slate-950/40">
-                        <input type="file" id="image-upload" class="hidden" accept="image/*" onchange="previewImage(event)">
-                        <label for="image-upload" class="cursor-pointer flex flex-col items-center">
-                            <div id="upload-placeholder" class="flex flex-col items-center">
-                                <svg class="w-10 h-10 text-indigo-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                                <span class="text-xs text-slate-200 font-medium">Перетащите фото товара или <span class="text-indigo-400 underline">выберите файл</span></span>
-                            </div>
-                            <img id="image-preview" class="hidden max-h-36 rounded-lg object-contain border border-white/20">
-                        </label>
-                    </div>
-
-                    <div>
-                        <textarea id="prompt-input" rows="3" placeholder="Введите название товара и особенности (например: Кофемашина рожковая, стиль минимализм, неоновый фон, плашки с выгодами)" class="w-full px-4 py-3 rounded-xl bg-slate-950/60 border border-white/10 text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500 text-sm resize-none"></textarea>
-                    </div>
-
-                    <button onclick="handleStartGenerate()" class="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 font-semibold text-white rounded-xl transition-all shadow-lg shadow-indigo-600/30 flex justify-center items-center gap-2">
-                        <span>✨ Сгенерировать карточку</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Раздел Реферальной программы -->
-            <div id="referral-view" class="w-full max-w-2xl hidden">
-                <div class="glass-card p-8 rounded-2xl shadow-2xl">
-                    <div class="text-center mb-6">
-                        <span class="text-4xl">🎁</span>
-                        <h2 class="text-2xl font-bold text-white mt-2 mb-1">Приглашайте друзей — получайте генерации!</h2>
-                        <p class="text-sm text-slate-300">Получите <span class="text-indigo-400 font-bold">+50 бесплатных кредитов</span> за каждого друга, который зарегистрируется по вашей ссылке и оформит подписку.</p>
-                    </div>
-
-                    <div class="bg-slate-950/60 p-4 rounded-xl border border-white/10 space-y-3">
-                        <label class="block text-xs text-slate-400">Ваша реферальная ссылка:</label>
-                        <div class="flex gap-2">
-                            <input type="text" id="referral-link-input" readonly class="flex-1 px-3 py-2 rounded-lg bg-slate-900 border border-white/10 text-xs text-indigo-300 focus:outline-none">
-                            <button onclick="copyReferralLink()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold rounded-lg transition-colors">
-                                Скопировать
-                            </button>
-                        </div>
-                        <p id="copy-success-msg" class="text-xs text-green-400 hidden">Ссылка скопирована в буфер обмена!</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Галерея -->
-            <div id="gallery-view" class="w-full hidden">
-                <h2 class="text-xl font-bold mb-4">Мои сгенерированные работы</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-slate-400 text-sm">
-                    У вас пока нет сохраненных карточек.
-                </div>
-            </div>
-
-            <!-- Тарифы -->
-            <div id="pricing-view" class="w-full hidden">
-                <h2 class="text-xl font-bold mb-4">Тарифы и подписка</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="glass-card p-6 rounded-xl">
-                        <h3 class="font-bold text-lg mb-2">Старт</h3>
-                        <p class="text-2xl font-bold mb-4">390 ₽ <span class="text-xs text-slate-400">/ 50 генераций</span></p>
-                        <button class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-medium">Пополнить</button>
-                    </div>
-                </div>
-            </div>
-
-        </main>
-    </div>
-
-    <!-- Модальное окно авторизации -->
-    <div id="auth-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex justify-center items-center hidden z-50">
-        <div class="glass-card p-6 rounded-2xl max-w-md w-full relative">
-            <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">✕</button>
-            
-            <div class="flex border-b border-white/10 mb-6">
-                <button id="tab-login-btn" onclick="toggleAuthTab('login')" class="flex-1 pb-3 text-sm font-semibold text-indigo-400 border-b-2 border-indigo-500">Вход</button>
-                <button id="tab-signup-btn" onclick="toggleAuthTab('signup')" class="flex-1 pb-3 text-sm font-semibold text-slate-400 hover:text-slate-200">Регистрация</button>
-            </div>
-
-            <form id="auth-form" onsubmit="handleAuthSubmit(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs text-slate-400 mb-1">Ваш Email</label>
-                    <input type="email" id="modal-email-input" required placeholder="name@example.com" class="w-full px-4 py-2.5 rounded-lg bg-slate-950/80 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 text-sm">
-                </div>
-                <div>
-                    <label class="block text-xs text-slate-400 mb-1">Пароль</label>
-                    <input type="password" id="modal-password-input" required minlength="6" placeholder="••••••••" class="w-full px-4 py-2.5 rounded-lg bg-slate-950/80 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 text-sm">
-                </div>
-
-                <button type="submit" id="modal-submit-btn" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 font-medium rounded-lg transition-colors text-sm">
-                    Войти в аккаунт
-                </button>
-            </form>
-
-            <div id="modal-auth-msg" class="mt-4 text-xs text-center hidden"></div>
+        <!-- Категории товаров -->
+        <div class="flex flex-wrap justify-center gap-3 mb-10">
+            <span class="px-4 py-2 rounded-full glass-panel text-xs font-medium text-slate-200">📦 Электроника</span>
+            <span class="px-4 py-2 rounded-full glass-panel text-xs font-medium text-slate-200">👗 Одежда и Обувь</span>
+            <span class="px-4 py-2 rounded-full glass-panel text-xs font-medium text-slate-200">💄 Косметика</span>
+            <span class="px-4 py-2 rounded-full glass-panel text-xs font-medium text-slate-200">🏠 Товары для дома</span>
+            <span class="px-4 py-2 rounded-full glass-panel text-xs font-medium text-slate-200">⚡ Аксессуары</span>
         </div>
-    </div>
 
-    <script>
-        const SUPABASE_URL = 'https://zecwwgefsbpiadifnnuc.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InplY3d3Z2Vmc2JwaWFkaWZubnVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyMjM2MDMsImV4cCI6MjEwNDc5OTYwM30.PfH7zSMWJkzEhYg4qQ2OyASmQoElh3XzK3YwNc4_9Cg';
+        <!-- Быстрая регистрация -->
+        <div class="max-w-md mx-auto glass-panel p-2 rounded-2xl flex items-center gap-2 shadow-2xl border border-white/15">
+            <input type="email" id="quick-email" placeholder="Впишите ваш E-mail" class="flex-1 bg-transparent px-4 py-3 text-sm text-white placeholder-slate-400 focus:outline-none">
+            <button onclick="openAuthModal()" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl transition-all whitespace-nowrap shadow-md" data-i18n="hero_cta">
+                Попробовать бесплатно
+            </button>
+        </div>
+        <p class="text-xs text-slate-400 mt-3" data-i18n="hero_trial_note">3 бесплатные генерации при регистрации. Карта не нужна.</p>
+    </section>
 
-        let supabaseClient = null;
-        let currentUser = null;
-        let authMode = 'login';
+    <!-- СЕКЦИЯ «ЧТО УМЕЕТ CARDCRAFT AI» (BENTO GRID) -->
+    <section id="features" class="py-16 px-6 max-w-6xl mx-auto relative z-10">
+        <h2 class="text-3xl font-extrabold text-center text-white mb-12" data-i18n="features_title">
+            Что умеет CardCraft AI?
+        </h2>
 
-        function initApp() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const refId = urlParams.get('ref');
-            if (refId) {
-                localStorage.setItem('cardcraft_referred_by', refId);
-            }
-
-            if (window.supabase) {
-                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                checkUser();
-            }
-        }
-
-        async function checkUser() {
-            const { data: { user } } = await supabaseClient.auth.getUser();
-            currentUser = user;
-
-            const sidebar = document.getElementById('sidebar');
-            const authAction = document.getElementById('header-auth-action');
-
-            if (user) {
-                const { data: profile } = await supabaseClient.from('profiles').select('credits').eq('id', user.id).single();
-                const credits = profile ? profile.credits : 0;
-
-                document.getElementById('user-email-display').innerText = user.email;
-                document.getElementById('user-credits-badge').innerText = `⚡ ${credits} кредитов`;
-                document.getElementById('referral-link-input').value = `${window.location.origin}${window.location.pathname}?ref=${user.id}`;
-
-                sidebar.classList.remove('hidden');
-                authAction.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <span class="text-xs text-slate-300 font-medium">${user.email}</span>
-                    </div>
-                `;
-                closeAuthModal();
-            } else {
-                sidebar.classList.add('hidden');
-                authAction.innerHTML = `
-                    <button onclick="openAuthModal()" class="px-5 py-2 text-sm font-medium bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-all shadow-lg shadow-indigo-600/30">
-                        Попробовать бесплатно / Вход
-                    </button>
-                `;
-            }
-        }
-
-        function previewImage(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('upload-placeholder').classList.add('hidden');
-                    const img = document.getElementById('image-preview');
-                    img.src = e.target.result;
-                    img.classList.remove('hidden');
-                }
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function handleStartGenerate() {
-            if (!currentUser) {
-                openAuthModal();
-            } else {
-                alert('Начинаем генерацию с помощью Gemini API!');
-            }
-        }
-
-        function switchTab(tab) {
-            document.getElementById('generator-widget').classList.add('hidden');
-            document.getElementById('gallery-view').classList.add('hidden');
-            document.getElementById('pricing-view').classList.add('hidden');
-            document.getElementById('referral-view').classList.add('hidden');
-
-            if (tab === 'workspace') document.getElementById('generator-widget').classList.remove('hidden');
-            if (tab === 'gallery') document.getElementById('gallery-view').classList.remove('hidden');
-            if (tab === 'pricing') document.getElementById('pricing-view').classList.remove('hidden');
-            if (tab === 'referral') document.getElementById('referral-view').classList.remove('hidden');
-        }
-
-        function openAuthModal() { document.getElementById('auth-modal').classList.remove('hidden'); }
-        function closeAuthModal() { document.getElementById('auth-modal').classList.add('hidden'); }
-
-        function toggleAuthTab(mode) {
-            authMode = mode;
-            const loginBtn = document.getElementById('tab-login-btn');
-            const signupBtn = document.getElementById('tab-signup-btn');
-            const submitBtn = document.getElementById('modal-submit-btn');
-            const msgBox = document.getElementById('modal-auth-msg');
-
-            msgBox.classList.add('hidden');
-
-            if (mode === 'login') {
-                loginBtn.className = 'flex-1 pb-3 text-sm font-semibold text-indigo-400 border-b-2 border-indigo-500';
-                signupBtn.className = 'flex-1 pb-3 text-sm font-semibold text-slate-400 hover:text-slate-200';
-                submitBtn.innerText = 'Войти в аккаунт';
-            } else {
-                signupBtn.className = 'flex-1 pb-3 text-sm font-semibold text-indigo-400 border-b-2 border-indigo-500';
-                loginBtn.className = 'flex-1 pb-3 text-sm font-semibold text-slate-400 hover:text-slate-200';
-                submitBtn.innerText = 'Зарегистрироваться';
-            }
-        }
-
-        async function handleAuthSubmit(e) {
-            e.preventDefault();
-            const email = document.getElementById('modal-email-input').value.trim();
-            const password = document.getElementById('modal-password-input').value.trim();
-            const msgBox = document.getElementById('modal-auth-msg');
-            const btn = document.getElementById('modal-submit-btn');
-
-            btn.disabled = true;
-            btn.innerText = 'Загрузка...';
-
-            let result;
-            if (authMode === 'login') {
-                result = await supabaseClient.auth.signInWithPassword({ email, password });
-            } else {
-                const referredBy = localStorage.getItem('cardcraft_referred_by');
-                result = await supabaseClient.auth.signUp({
-                    email,
-                    password,
-                    options: {
-                        data: { referred_by: referredBy }
-                    }
-                });
-            }
-
-            btn.disabled = false;
-            btn.innerText = authMode === 'login' ? 'Войти в аккаунт' : 'Зарегистрироваться';
-
-            msgBox.classList.remove('hidden');
-            if (result.error) {
-                msgBox.innerText = 'Ошибка: ' + result.error.message;
-                msgBox.className = 'mt-4 text-xs text-center text-red-400';
-            } else {
-                if (authMode === 'signup' && !result.data.session) {
-                    msgBox.innerText = 'Регистрация успешна! Войдите в аккаунт.';
-                    msgBox.className = 'mt-4 text-xs text-center text-amber-400';
-                } else {
-                    msgBox.innerText = 'Успешно!';
-                    msgBox.className = 'mt-4 text-xs text-center text-green-400';
-                    checkUser();
-                }
-            }
-        }
-
-        function copyReferralLink() {
-            const input = document.getElementById('referral-link-input');
-            input.select();
-            navigator.clipboard.writeText(input.value);
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             
-            const msg = document.getElementById('copy-success-msg');
-            msg.classList.remove('hidden');
-            setTimeout(() => msg.classList.add('hidden'), 3000);
+            <!-- Bento 1: Инфографика -->
+            <div class="bento-card-light p-8 flex flex-col justify-between min-h-[380px] shadow-xl">
+                <div>
+                    <h3 class="text-2xl font-bold mb-3" data-i18n="card1_title">Создавать продающую инфографику</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed" data-i18n="card1_desc">
+                        Нейросеть сама выделит главные плюсы товара, подберет шрифты и расставит стильные плашки с выгодами.
+                    </p>
+                </div>
+                <div class="mt-6 bg-slate-100 p-4 rounded-xl border border-slate-200 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-lg bg-indigo-500 flex items-center justify-center text-white font-bold">AI</div>
+                    <div class="text-xs">
+                        <div class="font-bold text-slate-800">Плашка: «Мощность 1500W»</div>
+                        <div class="text-slate-500">Авто-стилизация под цвет товара</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bento 2: Замена фона -->
+            <div class="bento-card-soft p-8 flex flex-col justify-between min-h-[380px] shadow-xl">
+                <div>
+                    <h3 class="text-2xl font-bold mb-3" data-i18n="card2_title">Удалять и генерировать 3D-фон</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed" data-i18n="card2_desc">
+                        Забудьте о сложных фотосессиях. Загрузите обычное фото с телефона — нейросеть вырежет предмет и поместит его в студию.
+                    </p>
+                </div>
+                <div class="mt-6 bg-white p-4 rounded-xl border border-slate-200 flex justify-between items-center text-xs font-semibold">
+                    <span class="text-indigo-600">Исходник фото ➔</span>
+                    <span class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-md">Студийный 3D-фон</span>
+                </div>
+            </div>
+
+            <!-- Bento 3: Идеи карточек -->
+            <div class="bento-card-dark p-8 flex flex-col justify-between min-h-[380px]">
+                <div>
+                    <h3 class="text-2xl font-bold mb-3 text-white" data-i18n="card3_title">Генерировать идеи и ракурсы</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed" data-i18n="card3_desc">
+                        Нет идей для 2-го и 3-го слайда? AI предложит готовые варианты подачи: крупный план, детали, применение в жизни.
+                    </p>
+                </div>
+                <div class="mt-6 space-y-2">
+                    <div class="bg-slate-800/80 p-3 rounded-lg text-xs text-indigo-300 border border-white/5">
+                        💡 Идея 1: Показать водонепроницаемость с брызгами воды
+                    </div>
+                    <div class="bg-slate-800/80 p-3 rounded-lg text-xs text-indigo-300 border border-white/5">
+                        💡 Идея 2: Карточка сравнения "До / После"
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bento 4: Мультиязычность -->
+            <div class="bento-card-light p-8 flex flex-col justify-between min-h-[380px] shadow-xl">
+                <div>
+                    <h3 class="text-2xl font-bold mb-3" data-i18n="card4_title">Адаптация под разные языки</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed" data-i18n="card4_desc">
+                        Переводите текст инфографики на узбекский, русский или английский в 1 клик для выхода на международные маркетплейсы.
+                    </p>
+                </div>
+                <div class="mt-6 flex gap-2">
+                    <span class="px-3 py-1 bg-slate-200 rounded-md text-xs font-bold">Ozon (RU)</span>
+                    <span class="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-md text-xs font-bold">Uzum (UZ)</span>
+                    <span class="px-3 py-1 bg-slate-200 rounded-md text-xs font-bold">Amazon (EN)</span>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ДОПОЛНИТЕЛЬНЫЕ ПРЕИМУЩЕСТВА -->
+    <section class="py-16 px-6 max-w-6xl mx-auto relative z-10">
+        <div class="glass-panel p-10 rounded-3xl grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+            <div>
+                <div class="text-3xl mb-3">⚡</div>
+                <h4 class="font-bold text-lg mb-2 text-white" data-i18n="feat1_title">Экономия времени</h4>
+                <p class="text-xs text-slate-400" data-i18n="feat1_desc">Карточки создаются за 30 секунд вместо нескольких часов работы в Photoshop.</p>
+            </div>
+            <div>
+                <div class="text-3xl mb-3">🌐</div>
+                <h4 class="font-bold text-lg mb-2 text-white" data-i18n="feat2_title">Работает в браузере</h4>
+                <p class="text-xs text-slate-400" data-i18n="feat2_desc">Доступ к генератору с ПК, планшета или смартфона без установки сторонних программ.</p>
+            </div>
+            <div>
+                <div class="text-3xl mb-3">🎯</div>
+                <h4 class="font-bold text-lg mb-2 text-white" data-i18n="feat3_title">Рост CTR и продаж</h4>
+                <p class="text-xs text-slate-400" data-i18n="feat3_desc">Яркие плашки выделяют ваш товар в поисковой выдаче среди конкурентов.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ПОДВАЛ -->
+    <footer class="border-t border-white/10 py-10 px-6 relative z-10 bg-slate-950/80">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center font-bold text-white text-sm">C</div>
+                <span class="font-bold text-sm text-slate-300">CardCraft AI © 2026</span>
+            </div>
+
+            <div class="text-xs text-slate-400">
+                Техническая поддержка: <span class="text-indigo-400 underline cursor-pointer">support@cardcraft.ai</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- СКРИПТ ЛОКАЛИЗАЦИИ И ЯЗЫКОВ -->
+    <script>
+        const translations = {
+            ru: {
+                nav_features: "Возможности",
+                nav_how: "Как работает",
+                nav_pricing: "Тарифы",
+                btn_login: "Вход / Регистрация",
+                hero_title: "CardCraft AI — искусственный интеллект для продавцов на маркетплейсах",
+                hero_subtitle: "Инструмент, который создает сочные карточки товаров, удаляет фон и генерирует продающую инфографику за секунды.",
+                hero_cta: "Попробовать бесплатно",
+                hero_trial_note: "3 бесплатные генерации при регистрации. Карта не нужна.",
+                features_title: "Что умеет CardCraft AI?",
+                card1_title: "Создавать продающую инфографику",
+                card1_desc: "Нейросеть сама выделит главные плюсы товара, подберет шрифты и расставит стильные плашки с выгодами.",
+                card2_title: "Удалять и генерировать 3D-фон",
+                card2_desc: "Забудьте о сложных фотосессиях. Загрузите обычное фото с телефона — нейросеть вырежет предмет и поместит его в студию.",
+                card3_title: "Генерировать идеи и ракурсы",
+                card3_desc: "Нет идей для 2-го и 3-го слайда? AI предложит готовые варианты подачи: крупный план, детали, применение в жизни.",
+                card4_title: "Адаптация под разные языки",
+                card4_desc: "Переводите текст инфографики на узбекский, русский или английский в 1 клик для выхода на международные маркетплейсы.",
+                feat1_title: "Экономия времени",
+                feat1_desc: "Карточки создаются за 30 секунд вместо нескольких часов работы в Photoshop.",
+                feat2_title: "Работает в браузере",
+                feat2_desc: "Доступ к генератору с ПК, планшета или смартфона без установки сторонних программ.",
+                feat3_title: "Рост CTR и продаж",
+                feat3_desc: "Яркие плашки выделяют ваш товар в поисковой выдаче среди конкурентов."
+            },
+            uz: {
+                nav_features: "Imkoniyatlar",
+                nav_how: "Qanday ishlaydi",
+                nav_pricing: "Tariflar",
+                btn_login: "Kirish / Ro'yxatdan o'tish",
+                hero_title: "CardCraft AI — sotuvchilar uchun sun'iy intellekt",
+                hero_subtitle: "Mahsulot kartochkalarini yaratuvchi, fonni olib tashlaydigan va infografikani sekundlarda tayyorlaydigan vosita.",
+                hero_cta: "Bepul sinab ko'rish",
+                hero_trial_note: "Ro'yxatdan o'tganda 3 ta bepul generatsiya. Karta kerak emas.",
+                features_title: "CardCraft AI nimaga qodir?",
+                card1_title: "Sotadigan infografika yaratish",
+                card1_desc: "Sun'iy intellekt mahsulotning afzalliklarini ajratib ko'rsatadi va chiroyli dizayn beradi.",
+                card2_title: "3D-fon yaratish va olib tashlash",
+                card2_desc: "Murakkab fotosessiyalarni unuting. Telefonda olingan rasmni yuklang — AI uni studiyaga joylashtiradi.",
+                card3_title: "G'oyalar va rakurslar yaratish",
+                card3_desc: "Keyingi slaydlar uchun g'oya yo'qmi? AI tayyor variantlarni taklif qiladi.",
+                card4_title: "Boshqa tillarga moslashtirish",
+                card4_desc: "Matnlarni o'zbek, rus yoki ingliz tillariga 1 bosishda tarjima qiling.",
+                feat1_title: "Vaqtni tejash",
+                feat1_desc: "Kartochkalar Photoshop'da soatlab ishlash o'rniga 30 sekundda yaratiladi.",
+                feat2_title: "Brauzerda ishlaydi",
+                feat2_desc: "Dastur o'rnatmasdan kompyuter yoki telefondan foydalaning.",
+                feat3_title: "Savdo va CTR o'sishi",
+                feat3_desc: "Yorqin dizayn mahsulotingizni qidiruvda ajratib ko'rsatadi."
+            },
+            en: {
+                nav_features: "Features",
+                nav_how: "How it works",
+                nav_pricing: "Pricing",
+                btn_login: "Sign In / Register",
+                hero_title: "CardCraft AI — AI Studio for E-commerce Sellers",
+                hero_subtitle: "Create high-converting product cards, remove backgrounds, and generate infographics in seconds.",
+                hero_cta: "Try for Free",
+                hero_trial_note: "3 free generations on sign up. No credit card required.",
+                features_title: "What can CardCraft AI do?",
+                card1_title: "High-Converting Infographics",
+                card1_desc: "AI automatically highlights product features, picks fonts, and places selling badges.",
+                card2_title: "Background Removal & 3D Scenes",
+                card2_desc: "Forget expensive photo shoots. Upload a quick phone photo — AI generates studio lighting.",
+                card3_title: "Angles & Content Ideas",
+                card3_desc: "Need ideas for additional slides? AI suggests close-ups, details, and lifestyle scenes.",
+                card4_title: "Multi-language Support",
+                card4_desc: "Translate infographics to Uzbek, Russian, or English in 1 click for international growth.",
+                feat1_title: "Time Saver",
+                feat1_desc: "Create cards in 30 seconds instead of spending hours in Photoshop.",
+                feat2_title: "Runs in Browser",
+                feat2_desc: "Access the tool from PC, tablet, or phone without installing apps.",
+                feat3_title: "Boost CTR & Sales",
+                feat3_desc: "Eye-catching badges make your products stand out from competitors."
+            }
+        };
+
+        function setLanguage(lang) {
+            localStorage.setItem('cardcraft_lang', lang);
+
+            // Смена активной кнопки
+            ['ru', 'uz', 'en'].forEach(l => {
+                const btn = document.getElementById(`lang-${l}`);
+                if (l === lang) {
+                    btn.className = "px-2.5 py-1 rounded-md transition-all text-white bg-indigo-600";
+                } else {
+                    btn.className = "px-2.5 py-1 rounded-md transition-all text-slate-400 hover:text-white";
+                }
+            });
+
+            // Замена текста по атрибутам data-i18n
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang] && translations[lang][key]) {
+                    el.innerText = translations[lang][key];
+                }
+            });
         }
 
-        async function logout() {
-            await supabaseClient.auth.signOut();
-            checkUser();
-        }
+        // Инициализация выбранного языка
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedLang = localStorage.getItem('cardcraft_lang') || 'ru';
+            setLanguage(savedLang);
+        });
 
-        window.addEventListener('DOMContentLoaded', initApp);
+        function openAuthModal() {
+            alert('Открытие модального окна авторизации...');
+        }
     </script>
 </body>
 </html>
