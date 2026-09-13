@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CardCraft AI — ИИ-генератор инфографики премиум уровня (Identiko style)</title>
+    <title>CardCraft AI — PRO 3D Инфографика для Маркетплейсов</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -24,15 +24,14 @@
         }
     </script>
 
-    <!-- React, ReactDOM, Babel, Supabase, html2canvas -->
+    <!-- React, ReactDOM, Babel, Supabase -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Montserrat:wght@800;900&display=swap');
         
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
@@ -40,42 +39,16 @@
             color: #f9fafb;
         }
 
+        .title-font {
+            font-family: 'Montserrat', sans-serif;
+        }
+
         .bg-glow {
             position: absolute;
             border-radius: 50%;
             filter: blur(140px);
-            opacity: 0.3;
+            opacity: 0.35;
             pointer-events: none;
-        }
-
-        /* Эффекты стилей плашек (Identiko Style) */
-        .badge-glass {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-        }
-
-        .badge-neon {
-            background: rgba(15, 23, 42, 0.9);
-            border: 1px solid #818cf8;
-            box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
-        }
-
-        .badge-gold {
-            background: linear-gradient(135deg, rgba(217, 119, 6, 0.2), rgba(180, 83, 9, 0.4));
-            border: 1px solid rgba(251, 191, 36, 0.5);
-            box-shadow: 0 10px 25px rgba(217, 119, 6, 0.2);
-        }
-
-        .badge-clean {
-            background: rgba(15, 23, 42, 0.95);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        /* 3D Подиумы под товар */
-        .podium-glow {
-            box-shadow: 0 20px 50px rgba(99, 102, 241, 0.3);
         }
 
         .custom-scrollbar::-webkit-scrollbar {
@@ -95,7 +68,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
+        const { useState, useEffect } = React;
 
         const SUPABASE_URL = "https://zecwwgefsbpiadifnnuc.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InplY3d3Z2Vmc2JwaWFkaWZubnVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyMjM2MDMsImV4cCI6MjEwNDc5OTYwM30.PfH7zSMWJkzEhYg4qQ2OyASmQoElh3XzK3YwNc4_9Cg";
@@ -104,61 +77,21 @@
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         function App() {
-            const [lang, setLang] = useState('ru');
             const [user, setUser] = useState(null);
             const [credits, setCredits] = useState(15);
             const [activeTab, setActiveTab] = useState('home');
-            const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
-            // Основные параметры генерации Identiko
+            // Входные параметры
             const [prompt, setPrompt] = useState('');
-            const [selectedImage, setSelectedImage] = useState(null);
-            const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
-            
-            // Дополнительные параметры студии (как в Identiko)
-            const [slideCount, setSlideCount] = useState(3); // 1, 3 или 5 карточек
-            const [bgTheme, setBgTheme] = useState('ice_studio'); // ice_studio, luxury_gold, cyberpunk_neon, eco_nature, dark_minimal
-            const [badgeStyle, setBadgeStyle] = useState('glass'); // glass, neon, gold, clean
-            const [activeSlideIndex, setActiveSlideIndex] = useState(0);
+            const [category, setCategory] = useState('electronics'); // Категория товара
+            const [slideCount, setSlideCount] = useState(3);
+            const [styleTheme, setStyleTheme] = useState('neon_purple');
 
             const [isGenerating, setIsGenerating] = useState(false);
-            const [isDownloading, setIsDownloading] = useState(false);
+            const [activeSlideIndex, setActiveSlideIndex] = useState(0);
 
-            // Сгенерированные карточки (серия)
-            const [generatedCards, setGeneratedCards] = useState([
-                {
-                    title: "ТУРБО МИНИ ВЕНТИЛЯТОР",
-                    subtitle: "ЛЕПОРТАТИВНОЕ ОХЛАЖДЕНИЕ",
-                    features: [
-                        "Мощный турбо-поток воздуха",
-                        "LED-дисплей уровня заряда",
-                        "Складная конструкция 180°"
-                    ],
-                    aiProductPrompt: "Futuristic handheld turbo fan with purple LED ring"
-                },
-                {
-                    title: "АВТОНОМНОСТЬ И МОЩНОСТЬ",
-                    subtitle: "ДО 12 ЧАСОВ РАБОТЫ",
-                    features: [
-                        "Аккумулятор 4000 мАч",
-                        "Зарядка через Type-C",
-                        "5 скоростей обдува"
-                    ],
-                    aiProductPrompt: "Side view of sleek portable fan with battery indicator"
-                },
-                {
-                    title: "УДОБНО БРАТЬ С СОБОЙ",
-                    subtitle: "КОМПАКТНЫЙ РАЗМЕР",
-                    features: [
-                        "Вес всего 140 грамм",
-                        "Помещается в карман",
-                        "Бесшумный бесщеточный мотор"
-                    ],
-                    aiProductPrompt: "Portable fan standing on desk in modern setup"
-                }
-            ]);
-
-            const cardRef = useRef(null);
+            // Результаты 3D генерации
+            const [generatedSeries, setGeneratedSeries] = useState([]);
 
             useEffect(() => {
                 supabase.auth.getSession().then(({ data: { session } }) => {
@@ -166,24 +99,15 @@
                 });
             }, []);
 
-            const handleImageChange = (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    setSelectedImage(file);
-                    setImagePreviewUrl(URL.createObjectURL(file));
-                }
-            };
-
-            // Главная функция генерации в стиле Identiko
+            // Генерация всей 3D сцены по промпту + копирайтинг инфографики
             const handleGenerate = async () => {
                 if (!prompt.trim()) {
-                    alert("Введите описание товара (например: Портативный мини-вентилятор или Кофемашина)!");
+                    alert("Введите название или описание товара!");
                     return;
                 }
 
-                const requiredCredits = slideCount;
-                if (credits < requiredCredits) {
-                    alert(`Для генерации серии из ${slideCount} карточек нужно ${requiredCredits} кредитов. У вас осталось: ${credits}`);
+                if (credits < slideCount) {
+                    alert(`Вам нужно ${slideCount} кредитов. У вас: ${credits}`);
                     setActiveTab('pricing');
                     return;
                 }
@@ -191,433 +115,281 @@
                 setIsGenerating(true);
 
                 try {
-                    // Вызов Gemini API для генерации серии карточек с промптами для изображений
+                    // 1. Gemini составляет профессиональные промпты для 3D сцен и воронку продаж
                     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             contents: [{
                                 parts: [{
-                                    text: `Ты премиум арт-директор сервиса инфографики (как Identiko). 
-                                    Сгенерируй серию из ${slideCount} продающих карточек для товара: "${prompt}".
-                                    Каждая карточка должна раскрывать разные плюсы товара.
-                                    
-                                    Верни strictly JSON массив из ${slideCount} объектов:
+                                    text: `Ты топовый 3D арт-директор инфографики для маркетплейсов (Ozon, Wildberries).
+                                    Создай серию из ${slideCount} продающих 3D карточек для товара: "${prompt}".
+                                    Категория: ${category}. Стиль оформления: ${styleTheme}.
+
+                                    Сгенерируй строго JSON массив из ${slideCount} объектов:
                                     [
                                       {
-                                        "title": "Главный заголовок Слайда (крупно)",
-                                        "subtitle": "Броская плашка/Акцент",
-                                        "features": ["Характеристика 1", "Характеристика 2", "Характеристика 3"],
-                                        "aiProductPrompt": "Английский промпт для 3D рендера этого товара"
+                                        "imagePrompt": "Английский детальный промпт для нейросети: 3D commercial render of ${prompt} on glowing futuristic podium, studio lighting, octane render, 8k, cinematic product poster",
+                                        "title": "Заголовок слайда (напр: ТУРБО ВЕНТИЛЯТОР)",
+                                        "subtitle": "Подзаголовок (напр: МОЩНОСТЬ И СТИЛЬ)",
+                                        "discountTag": "Акционный тэг (напр: 15% OFF или ХИТ OZON)",
+                                        "bullets": ["Преимущество 1", "Преимущество 2", "Преимущество 3"]
                                       }
-                                    ]`
+                                    ]
+                                    Ответь ТОЛЬКО сырым JSON массивом.`
                                 }]
                             }]
                         })
                     });
 
                     const data = await response.json();
-                    const textResult = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+                    const jsonMatch = rawText.match(/\[[\s\S]*\]/);
 
-                    if (textResult) {
-                        const jsonMatch = textResult.match(/\[[\s\S]*\]/);
-                        if (jsonMatch) {
-                            const parsedSeries = JSON.parse(jsonMatch[0]);
-                            setGeneratedCards(parsedSeries);
-                        }
-                    }
+                    if (!jsonMatch) throw new Error("Ошибка обработки ответа ИИ");
 
-                    // Списываем кредиты пропорционально количеству карточек
-                    setCredits(prev => prev - requiredCredits);
+                    const parsedCards = JSON.parse(jsonMatch[0]);
+
+                    // 2. ИИ генерирует готовую 3D сцену с товаром на подиуме целиком
+                    const cardsWithImages = parsedCards.map((card) => {
+                        const seed = Math.floor(Math.random() * 99999);
+                        const encodedPrompt = encodeURIComponent(`${card.imagePrompt}, commercial 3d render, product standing on 3d podium, glossy finish, cinematic lighting`);
+                        
+                        return {
+                            ...card,
+                            imageUrl: `https://image.pollinations.ai/prompt/${encodedPrompt}?width=800&height=1066&seed=${seed}&nologo=true`
+                        };
+                    });
+
+                    setGeneratedSeries(cardsWithImages);
+                    setCredits(prev => prev - slideCount);
                     setActiveSlideIndex(0);
                     setActiveTab('studio');
 
                 } catch (err) {
-                    console.error("Identiko Gen Error:", err);
-                    // Фолбэк при ошибке
-                    const dummyCards = [];
-                    for(let i=0; i<slideCount; i++) {
-                        dummyCards.push({
-                            title: `${prompt.toUpperCase()} — СЛАЙД ${i+1}`,
-                            subtitle: i === 0 ? "ХИТ ПРОДАЖ 2026" : "ПРЕМИУМ КАЧЕСТВО",
-                            features: [
-                                "Инновационные материалы",
-                                "Официальная гарантия 2 года",
-                                "Быстрая экспресс-доставка"
-                            ],
-                            aiProductPrompt: prompt
-                        });
-                    }
-                    setGeneratedCards(dummyCards);
-                    setCredits(prev => Math.max(0, prev - requiredCredits));
-                    setActiveTab('studio');
+                    console.error(err);
+                    alert("Произошла ошибка при генерации. Попробуйте еще раз.");
                 } finally {
                     setIsGenerating(false);
                 }
             };
 
-            const downloadPNG = () => {
-                if (!cardRef.current) return;
-                setIsDownloading(true);
-
-                window.html2canvas(cardRef.current, {
-                    scale: 3,
-                    useCORS: true,
-                    backgroundColor: null
-                }).then(canvas => {
-                    const link = document.createElement('a');
-                    link.download = `identiko-card-slide-${activeSlideIndex + 1}.png`;
-                    link.href = canvas.toDataURL('image/png');
-                    link.click();
-                    setIsDownloading(false);
-                }).catch(err => {
-                    console.error(err);
-                    setIsDownloading(false);
-                });
+            const downloadImage = (url) => {
+                const link = document.createElement('a');
+                link.href = url;
+                link.target = '_blank';
+                link.download = `3d-card-ozon-slide-${activeSlideIndex + 1}.jpg`;
+                link.click();
             };
 
-            // Генерация стиля фона
-            const getBgStyleClass = () => {
-                switch(bgTheme) {
-                    case 'ice_studio': 
-                        return "from-slate-950 via-cyan-950 to-slate-900 border-cyan-500/30";
-                    case 'luxury_gold': 
-                        return "from-stone-950 via-amber-950 to-neutral-950 border-amber-500/40";
-                    case 'cyberpunk_neon': 
-                        return "from-slate-950 via-indigo-950 to-purple-950 border-indigo-500/40";
-                    case 'eco_nature': 
-                        return "from-emerald-950 via-slate-950 to-teal-950 border-emerald-500/30";
-                    default: 
-                        return "from-slate-950 via-slate-900 to-slate-950 border-slate-800";
-                }
-            };
-
-            // Генерация стиля плашек
-            const getBadgeClass = () => {
-                switch(badgeStyle) {
-                    case 'glass': return "badge-glass text-white";
-                    case 'neon': return "badge-neon text-indigo-200";
-                    case 'gold': return "badge-gold text-amber-200";
-                    case 'clean': return "badge-clean text-slate-100";
-                    default: return "badge-glass text-white";
-                }
-            };
-
-            const currentCard = generatedCards[activeSlideIndex] || generatedCards[0];
+            const currentCard = generatedSeries[activeSlideIndex];
 
             return (
                 <div className="min-h-screen flex flex-col justify-between relative overflow-x-hidden">
-                    <div className="bg-glow w-[650px] h-[650px] bg-indigo-600 -top-40 -left-40"></div>
-                    <div className="bg-glow w-[550px] h-[550px] bg-cyan-600 bottom-0 right-0"></div>
+                    <div className="bg-glow w-[650px] h-[650px] bg-purple-600 -top-40 -left-40"></div>
+                    <div className="bg-glow w-[550px] h-[550px] bg-indigo-600 bottom-0 right-0"></div>
 
-                    {/* Навигация */}
+                    {/* Шапка */}
                     <header className="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/80 px-6 py-4">
                         <div className="max-w-7xl mx-auto flex items-center justify-between">
                             <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('home')}>
-                                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-cyan-400 flex items-center justify-center font-black text-white text-xl shadow-lg shadow-indigo-500/30">
+                                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-500 via-indigo-500 to-cyan-400 flex items-center justify-center font-black text-white text-xl shadow-lg shadow-purple-500/30">
                                     C
                                 </div>
                                 <div>
-                                    <span className="text-xl font-black bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent block leading-none">
+                                    <span className="text-xl font-black bg-gradient-to-r from-white via-slate-200 to-purple-300 bg-clip-text text-transparent block leading-none">
                                         CardCraft AI
                                     </span>
-                                    <span className="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">Identiko Studio Engine</span>
+                                    <span className="text-[10px] text-purple-400 font-bold uppercase tracking-wider">3D Infographic Studio for E-commerce</span>
                                 </div>
                             </div>
 
                             <nav className="hidden md:flex items-center gap-8 text-sm font-bold">
-                                <button onClick={() => setActiveTab('home')} className={`transition-all ${activeTab === 'home' ? 'text-indigo-400 font-bold' : 'text-slate-400 hover:text-white'}`}>Главная</button>
-                                <button onClick={() => setActiveTab('studio')} className={`transition-all ${activeTab === 'studio' ? 'text-indigo-400 font-bold' : 'text-slate-400 hover:text-white'}`}>AI-Студия</button>
-                                <button onClick={() => setActiveTab('pricing')} className={`transition-all ${activeTab === 'pricing' ? 'text-indigo-400 font-bold' : 'text-slate-400 hover:text-white'}`}>Тарифы</button>
+                                <button onClick={() => setActiveTab('home')} className={`transition-all ${activeTab === 'home' ? 'text-purple-400' : 'text-slate-400 hover:text-white'}`}>Генератор</button>
+                                <button onClick={() => setActiveTab('studio')} className={`transition-all ${activeTab === 'studio' ? 'text-purple-400' : 'text-slate-400 hover:text-white'}`}>3D Студия</button>
+                                <button onClick={() => setActiveTab('pricing')} className={`transition-all ${activeTab === 'pricing' ? 'text-purple-400' : 'text-slate-400 hover:text-white'}`}>Тарифы</button>
                             </nav>
 
                             <div className="flex items-center gap-4">
-                                <div className="bg-indigo-950/80 border border-indigo-800/60 px-4 py-1.5 rounded-xl text-xs font-bold text-indigo-300 flex items-center gap-1.5 shadow-lg">
+                                <div className="bg-purple-950/80 border border-purple-800/60 px-4 py-1.5 rounded-xl text-xs font-bold text-purple-300 flex items-center gap-1.5 shadow-lg">
                                     <span>⚡ {credits} Кредитов</span>
                                 </div>
-
-                                <button onClick={() => setActiveTab('pricing')} className="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-indigo-600/30">
-                                    Пополнить
-                                </button>
                             </div>
                         </div>
                     </header>
 
-                    {/* Главная страница (Форма управления как в Identiko) */}
                     <main className="flex-1 relative z-10">
+                        {/* Форма на Главной */}
                         {activeTab === 'home' && (
-                            <section className="pt-16 pb-20 px-6 max-w-5xl mx-auto">
+                            <section className="pt-12 pb-20 px-6 max-w-4xl mx-auto">
                                 <div className="text-center mb-10">
-                                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-950/80 border border-indigo-800/50 text-indigo-300 text-xs font-bold mb-6">
-                                        <span>✨ Генератор родом из идеи Identiko — Сочные 3D-фоны и авто-подбор дизайна</span>
+                                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-950/80 border border-purple-800/50 text-purple-300 text-xs font-bold mb-6">
+                                        <span>🎨 Профессиональный ИИ-дизайн карточек Ozon & Wildberries</span>
                                     </div>
-                                    <h1 className="text-4xl sm:text-6xl font-black text-white leading-tight tracking-tight mb-4">
-                                        Роскошная инфографика из любого промпта
+                                    <h1 className="text-4xl sm:text-6xl font-black text-white leading-tight tracking-tight mb-4 title-font">
+                                        3D ИНФОГРАФИКА ДЛЯ МАРКЕТПЛЕЙСОВ
                                     </h1>
                                     <p className="text-slate-400 text-base max-w-2xl mx-auto">
-                                        Загрузите фото товара или просто опишите его текстом — ИИ сам создаст 3D-товар, роскошный фон и сверстает серию карточек.
+                                        Создавайте сочные карточки товаров с 3D-подиумами, плашками и продающей воронкой слайдов по одному промпту.
                                     </p>
                                 </div>
 
-                                {/* Панель настроек генерации */}
                                 <div className="bg-slate-900/90 border border-slate-800 p-6 sm:p-8 rounded-3xl shadow-2xl backdrop-blur-xl space-y-6">
-                                    
-                                    {/* Поле Промпта и Изображения */}
                                     <div className="space-y-3">
                                         <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
-                                            1. Описание товара (Промпт)
+                                            Описание товара или ссылка (например: Кофемашина, Вентилятор, Часы)
                                         </label>
-                                        <div className="flex flex-col sm:flex-row gap-3">
-                                            <input 
-                                                type="text" 
-                                                value={prompt}
-                                                onChange={(e) => setPrompt(e.target.value)}
-                                                placeholder="Например: Портативный мини-вентилятор с турбо охлаждением и фиолетовой подсветкой..."
-                                                className="flex-1 bg-slate-950 border border-slate-700 rounded-2xl px-5 py-4 text-sm text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
-                                            />
-                                            <label className="sm:w-48 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-2xl p-3 flex items-center justify-center cursor-pointer text-xs font-bold text-slate-200 transition-all shrink-0 text-center">
-                                                <span>{selectedImage ? "✓ Фото прикреплено" : "📷 + Загрузить фото (Опционально)"}</span>
-                                                <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
-                                            </label>
-                                        </div>
+                                        <input 
+                                            type="text" 
+                                            value={prompt}
+                                            onChange={(e) => setPrompt(e.target.value)}
+                                            placeholder="Автоматическая зерновая кофемашина с капучинатором..."
+                                            className="w-full bg-slate-950 border border-slate-700 rounded-2xl px-5 py-4 text-sm text-white placeholder-slate-500 focus:border-purple-500 focus:outline-none"
+                                        />
                                     </div>
 
-                                    {/* Дополнительные опции Identiko */}
-                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-2">
-                                        
-                                        {/* Количество карточек в серии */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                         <div className="space-y-2">
-                                            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
-                                                Количество карточек (Серия)
-                                            </label>
-                                            <div className="grid grid-cols-3 gap-2 bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
+                                            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">Категория</label>
+                                            <select 
+                                                value={category}
+                                                onChange={(e) => setCategory(e.target.value)}
+                                                className="w-full bg-slate-950 border border-slate-700 rounded-2xl px-4 py-3 text-xs font-bold text-white focus:border-purple-500 focus:outline-none"
+                                            >
+                                                <option value="electronics">Бытовая техника & Электроника</option>
+                                                <option value="accessories">Аксессуары & Часы</option>
+                                                <option value="home">Товары для дома</option>
+                                                <option value="beauty">Красота & Уход</option>
+                                            </select>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">Кол-во слайдов</label>
+                                            <div className="grid grid-cols-3 gap-1.5 bg-slate-950 p-1 rounded-2xl border border-slate-800">
                                                 {[1, 3, 5].map(num => (
                                                     <button 
                                                         key={num} 
                                                         onClick={() => setSlideCount(num)}
-                                                        className={`py-2 rounded-xl text-xs font-bold transition-all ${slideCount === num ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}
+                                                        className={`py-2 rounded-xl text-xs font-bold transition-all ${slideCount === num ? 'bg-purple-600 text-white' : 'text-slate-400 hover:text-white'}`}
                                                     >
-                                                        {num} {num === 1 ? 'карточка' : 'слайда'}
+                                                        {num}
                                                     </button>
                                                 ))}
                                             </div>
-                                            <p className="text-[11px] text-indigo-400 font-semibold text-right">Спишется: {slideCount} кр.</p>
                                         </div>
 
-                                        {/* Стиль заднего фона */}
                                         <div className="space-y-2">
-                                            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
-                                                Атмосфера и 3D-фон
-                                            </label>
+                                            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">3D Стиль сцены</label>
                                             <select 
-                                                value={bgTheme} 
-                                                onChange={(e) => setBgTheme(e.target.value)}
-                                                className="w-full bg-slate-950 border border-slate-700 rounded-2xl px-4 py-3 text-xs font-bold text-white focus:border-indigo-500 focus:outline-none"
+                                                value={styleTheme} 
+                                                onChange={(e) => setStyleTheme(e.target.value)}
+                                                className="w-full bg-slate-950 border border-slate-700 rounded-2xl px-4 py-3 text-xs font-bold text-white focus:border-purple-500 focus:outline-none"
                                             >
-                                                <option value="ice_studio">❄️ Ледяная 3D-Студия / Пар</option>
-                                                <option value="luxury_gold">✨ Премиум Золото & Подиум</option>
-                                                <option value="cyberpunk_neon">🌆 Киберпанк & Неоновые лучи</option>
-                                                <option value="eco_nature">🍃 Эко-Природа & Камень</option>
-                                                <option value="dark_minimal">🖤 Тёмный Минимализм</option>
+                                                <option value="neon_purple">💜 Неоновый Подиум (Как на 3 фото)</option>
+                                                <option value="cyber_ice">🩵 Кибер Лед & Свет</option>
+                                                <option value="gold_marble">🏆 Премиум Золото и Мрамор</option>
+                                                <option value="dark_studio">🖤 Тёмная Минималистичная Студия</option>
                                             </select>
                                         </div>
-
-                                        {/* Стиль графических плашек */}
-                                        <div className="space-y-2">
-                                            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
-                                                Дизайн надписей и плашек
-                                            </label>
-                                            <select 
-                                                value={badgeStyle} 
-                                                onChange={(e) => setBadgeStyle(e.target.value)}
-                                                className="w-full bg-slate-950 border border-slate-700 rounded-2xl px-4 py-3 text-xs font-bold text-white focus:border-indigo-500 focus:outline-none"
-                                            >
-                                                <option value="glass">💎 Glassmorphism (Матовое стекло)</option>
-                                                <option value="neon">⚡ Неоновая подсветка</option>
-                                                <option value="gold">🏆 Золотая окантовка</option>
-                                                <option value="clean">📐 Строгий Графичный</option>
-                                            </select>
-                                        </div>
-
                                     </div>
 
-                                    {/* Кнопка запуска генерации */}
                                     <button 
                                         onClick={handleGenerate} 
                                         disabled={isGenerating}
-                                        className="w-full bg-gradient-to-r from-indigo-600 via-purple-600 to-cyan-500 hover:from-indigo-500 hover:to-cyan-400 text-white font-extrabold py-5 rounded-2xl text-sm transition-all shadow-xl shadow-indigo-600/30 flex items-center justify-center gap-3 disabled:opacity-50"
+                                        className="w-full bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white font-extrabold py-5 rounded-2xl text-sm transition-all shadow-xl shadow-purple-600/30 flex items-center justify-center gap-3 disabled:opacity-50"
                                     >
-                                        <span>{isGenerating ? "ИИ генерирует 3D-серию Identiko..." : `Сгенерировать серию из ${slideCount} карточек (${slideCount} кр.)`}</span>
+                                        <span>{isGenerating ? "ИИ генерирует 3D арт и инфографику..." : `Сгенерировать ${slideCount} 3D-карточек (${slideCount} кр.)`}</span>
                                         <span className="text-lg">✨</span>
                                     </button>
-
                                 </div>
                             </section>
                         )}
 
-                        {/* СТУДИЯ КАРТОЧЕК И РЕДАКТИРОВАНИЕ (Identiko Canvas) */}
+                        {/* 3D Студия */}
                         {activeTab === 'studio' && (
-                            <section className="py-8 px-6 max-w-7xl mx-auto">
-                                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-                                    <div>
-                                        <h2 className="text-2xl font-black text-white">Identiko Studio Canvas</h2>
-                                        <p className="text-xs text-slate-400">Переключайтесь между слайдами серии и скачивайте результат</p>
-                                    </div>
-
-                                    <button 
-                                        onClick={downloadPNG} 
-                                        disabled={isDownloading}
-                                        className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white px-7 py-3 rounded-2xl text-xs font-extrabold shadow-lg shadow-emerald-600/20 flex items-center gap-2 disabled:opacity-50"
-                                    >
-                                        <span>{isDownloading ? "Сохранение 4K..." : `Скачать Слайд #${activeSlideIndex + 1} в PNG`}</span>
-                                        <span>📥</span>
-                                    </button>
-                                </div>
-
-                                {/* Переключатель слайдов серии */}
-                                <div className="flex gap-3 mb-8 overflow-x-auto pb-2 custom-scrollbar">
-                                    {generatedCards.map((card, idx) => (
-                                        <button 
-                                            key={idx}
-                                            onClick={() => setActiveSlideIndex(idx)}
-                                            className={`px-5 py-3 rounded-2xl text-xs font-bold whitespace-nowrap transition-all border ${activeSlideIndex === idx ? 'bg-indigo-600 border-indigo-400 text-white shadow-lg shadow-indigo-600/30' : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'}`}
-                                        >
-                                            Слайд {idx + 1}: {card.title.slice(0, 18)}...
+                            <section className="py-8 px-6 max-w-6xl mx-auto">
+                                {generatedSeries.length === 0 ? (
+                                    <div className="text-center py-20">
+                                        <p className="text-slate-400">Сначала создайте 3D-карточки на Главной!</p>
+                                        <button onClick={() => setActiveTab('home')} className="mt-4 bg-purple-600 text-white px-6 py-2.5 rounded-xl font-bold text-xs">
+                                            Перейти к созданию
                                         </button>
-                                    ))}
-                                </div>
-
-                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                                    {/* ГОТОВЫЙ ХОЛСТ СЛАЙДА (Экран генерации) */}
-                                    <div className="lg:col-span-6 flex justify-center">
-                                        <div 
-                                            ref={cardRef}
-                                            className={`w-full max-w-[430px] aspect-[3/4] rounded-[32px] p-7 bg-gradient-to-b ${getBgStyleClass()} border flex flex-col justify-between shadow-2xl relative overflow-hidden transition-all duration-300`}
-                                        >
-                                            {/* Неоновый блик Identiko */}
-                                            <div className="absolute -top-16 -right-16 w-56 h-56 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"></div>
-
-                                            {/* Шапка Слайда */}
-                                            <div className="space-y-3 z-10">
-                                                <div className={`inline-block text-[11px] font-black uppercase tracking-widest px-4 py-1.5 rounded-xl ${getBadgeClass()}`}>
-                                                    {currentCard.subtitle}
-                                                </div>
-                                                <h3 className="text-2xl sm:text-3xl font-black text-white leading-tight uppercase drop-shadow-md">
-                                                    {currentCard.title}
-                                                </h3>
-                                            </div>
-
-                                            {/* Центр: 3D Товар на подиуме */}
-                                            <div className="my-auto h-52 w-full rounded-2xl flex items-center justify-center relative my-4">
-                                                {imagePreviewUrl ? (
-                                                    <img src={imagePreviewUrl} alt="Товар" className="max-h-full max-w-full object-contain drop-shadow-[0_20px_30px_rgba(0,0,0,0.7)]" />
-                                                ) : (
-                                                    <div className="w-full h-full rounded-2xl bg-slate-900/40 backdrop-blur-md border border-white/10 flex flex-col items-center justify-center text-center p-4 shadow-2xl">
-                                                        <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-indigo-500/20 to-cyan-500/20 flex items-center justify-center text-3xl mb-2 podium-glow">
-                                                            ⚡
-                                                        </div>
-                                                        <span className="text-xs font-extrabold text-slate-200">ИИ 3D-Рендер товара</span>
-                                                        <span className="text-[10px] text-indigo-300 mt-1">{currentCard.aiProductPrompt}</span>
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            {/* Блок характеристик в выбранном стиле плашек */}
-                                            <div className="space-y-2.5 z-10">
-                                                {currentCard.features.map((feat, i) => (
-                                                    <div key={i} className={`p-3.5 rounded-2xl text-xs font-bold flex items-center gap-3 shadow-lg ${getBadgeClass()}`}>
-                                                        <span className="text-emerald-400 font-black text-sm">✓</span>
-                                                        <span>{feat}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
                                     </div>
-
-                                    {/* Редактор текста слайда */}
-                                    <div className="lg:col-span-6 bg-slate-900/80 backdrop-blur-md p-6 sm:p-8 rounded-3xl border border-slate-800 space-y-6">
-                                        <h3 className="text-lg font-bold text-white border-b border-slate-800 pb-3">
-                                            Редактирование Слайда #{activeSlideIndex + 1}
-                                        </h3>
-
-                                        <div>
-                                            <label className="block text-xs font-bold text-slate-400 mb-1.5">Главный заголовок</label>
-                                            <input 
-                                                type="text" 
-                                                value={currentCard.title} 
-                                                onChange={(e) => {
-                                                    const updated = [...generatedCards];
-                                                    updated[activeSlideIndex].title = e.target.value;
-                                                    setGeneratedCards(updated);
-                                                }}
-                                                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white font-bold focus:border-indigo-500 focus:outline-none"
-                                            />
+                                ) : (
+                                    <>
+                                        <div className="flex justify-between items-center mb-6">
+                                            <div>
+                                                <h2 className="text-2xl font-black text-white title-font">Готовая 3D Серия Карточек</h2>
+                                                <p className="text-xs text-slate-400">Сгенерировано полностью нейросетью по единому промпту</p>
+                                            </div>
+                                            <button 
+                                                onClick={() => downloadImage(currentCard.imageUrl)}
+                                                className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg shadow-emerald-600/20"
+                                            >
+                                                <span>Скачать HD Изображение</span>
+                                                <span>📥</span>
+                                            </button>
                                         </div>
 
-                                        <div>
-                                            <label className="block text-xs font-bold text-slate-400 mb-1.5">Акцентная плашка</label>
-                                            <input 
-                                                type="text" 
-                                                value={currentCard.subtitle} 
-                                                onChange={(e) => {
-                                                    const updated = [...generatedCards];
-                                                    updated[activeSlideIndex].subtitle = e.target.value;
-                                                    setGeneratedCards(updated);
-                                                }}
-                                                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white font-bold focus:border-indigo-500 focus:outline-none"
-                                            />
+                                        {/* Переключение слайдов */}
+                                        <div className="flex gap-3 mb-6 overflow-x-auto pb-2 custom-scrollbar">
+                                            {generatedSeries.map((card, idx) => (
+                                                <button 
+                                                    key={idx}
+                                                    onClick={() => setActiveSlideIndex(idx)}
+                                                    className={`px-5 py-3 rounded-2xl text-xs font-bold transition-all border ${activeSlideIndex === idx ? 'bg-purple-600 border-purple-400 text-white shadow-lg shadow-purple-600/30' : 'bg-slate-900 border-slate-800 text-slate-400'}`}
+                                                >
+                                                    Слайд {idx + 1}: {card.title}
+                                                </button>
+                                            ))}
                                         </div>
 
-                                        <div>
-                                            <label className="block text-xs font-bold text-slate-400 mb-2">Характеристики товара</label>
-                                            <div className="space-y-2">
-                                                {currentCard.features.map((feat, i) => (
-                                                    <input 
-                                                        key={i}
-                                                        type="text" 
-                                                        value={feat} 
-                                                        onChange={(e) => {
-                                                            const updated = [...generatedCards];
-                                                            updated[activeSlideIndex].features[i] = e.target.value;
-                                                            setGeneratedCards(updated);
-                                                        }}
-                                                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white font-medium focus:border-indigo-500 focus:outline-none"
+                                        {/* Просмотр готовой 3D картинки */}
+                                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                                            <div className="lg:col-span-7 flex justify-center">
+                                                <div className="relative w-full max-w-[420px] rounded-[36px] overflow-hidden shadow-2xl border border-purple-500/30 group">
+                                                    <img 
+                                                        src={currentCard.imageUrl} 
+                                                        alt="3D Infographic Render" 
+                                                        className="w-full h-auto object-cover"
                                                     />
-                                                ))}
+                                                </div>
+                                            </div>
+
+                                            {/* Промпт и Буллеты */}
+                                            <div className="lg:col-span-5 bg-slate-900/80 p-6 rounded-3xl border border-slate-800 space-y-4">
+                                                <h3 className="text-lg font-bold text-white">Структура Слайда #{activeSlideIndex + 1}</h3>
+                                                
+                                                <div className="space-y-1.5">
+                                                    <span className="text-[10px] font-extrabold text-purple-400 uppercase tracking-wider">Заголовок:</span>
+                                                    <p className="text-sm font-black text-white">{currentCard.title}</p>
+                                                </div>
+
+                                                <div className="space-y-1.5">
+                                                    <span className="text-[10px] font-extrabold text-purple-400 uppercase tracking-wider">Продающие буллеты:</span>
+                                                    {currentCard.bullets?.map((b, i) => (
+                                                        <div key={i} className="text-xs bg-slate-950 p-3 rounded-xl text-slate-200 font-semibold border border-slate-800 flex items-center gap-2">
+                                                            <span className="text-purple-400">✦</span> <span>{b}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+
+                                                <div className="pt-2">
+                                                    <span className="text-[10px] font-extrabold text-slate-400 uppercase block mb-1">ИИ-Промпт 3D сцены:</span>
+                                                    <p className="text-[11px] text-slate-400 bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono">
+                                                        {currentCard.imagePrompt}
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-                            </section>
-                        )}
-
-                        {/* ТАРИФЫ */}
-                        {activeTab === 'pricing' && (
-                            <section className="py-16 px-6 max-w-5xl mx-auto">
-                                <div className="text-center mb-12">
-                                    <h2 className="text-3xl font-black text-white mb-3">Тарифные пакеты Identiko Studio</h2>
-                                    <p className="text-slate-400 text-sm">Генерируйте профессиональные серии карточек для маркетплейсов</p>
-                                </div>
-
-                                <div className="grid md:grid-cols-2 gap-8">
-                                    <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl space-y-6">
-                                        <h3 className="text-xl font-bold text-white">Старт</h3>
-                                        <div className="text-4xl font-black text-white">15 Кредитов</div>
-                                        <p className="text-xs text-slate-400">Бесплатно при регистрации. Хватит на 3 полноценные серии по 5 слайдов.</p>
-                                    </div>
-
-                                    <div className="bg-gradient-to-b from-indigo-950 via-slate-900 to-slate-950 border border-indigo-500/50 p-8 rounded-3xl space-y-6 shadow-2xl">
-                                        <h3 className="text-xl font-bold text-white">PRO Продавец</h3>
-                                        <div className="text-4xl font-black text-white">99,000 UZS <span className="text-xs font-normal text-slate-400">/ 300 кредитов</span></div>
-                                        <p className="text-xs text-slate-300">Неограниченная генерация 3D-фонов, стеклянных плашек Identiko и поддержка 4K PNG.</p>
-                                    </div>
-                                </div>
+                                    </>
+                                )}
                             </section>
                         )}
                     </main>
 
                     <footer className="border-t border-slate-900 py-6 px-6 text-center text-xs text-slate-500">
-                        CardCraft AI (Identiko Engine) © 2026. Все права защищены.
+                        CardCraft AI Engine © 2026.
                     </footer>
                 </div>
             );
